@@ -7,9 +7,9 @@ export default () => {
             type: process.env.DB_POSTGRES_TYPE || 'postgres',
             host: process.env.DB_POSTGRES_HOST || 'postgres-db',
             port: parseInt(process.env.DB_POSTGRES_PORT || '5432', 10),
-            username: process.env.DB_POSTGRES_USERNAME || 'myuser',
-            password: process.env.DB_POSTGRES_PASSWORD || 'mypassword',
-            database: process.env.DB_POSTGRES_DATABASE || 'mydatabase',
+            username: process.env.DB_POSTGRES_USERNAME || 'admin',
+            password: process.env.DB_POSTGRES_PASSWORD || '12345678',
+            database: process.env.DB_POSTGRES_DATABASE || 'facebook_clone',
         },
 
         jwt: {
