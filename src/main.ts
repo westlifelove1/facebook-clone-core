@@ -44,8 +44,8 @@ async function bootstrap() {
     await app.startAllMicroservices();
 
     const config = new DocumentBuilder()
-        .setTitle('API - Project Youtube Clone')
-        .setDescription('API - Xây dựng ứng dụng Youtube Clone với NestJS')
+        .setTitle('API - Project Facebook Clone')
+        .setDescription('API - Xây dựng ứng dụng Facebook Clone với NestJS')
         .setVersion('1.0')
         .addBearerAuth({
             type: 'http',

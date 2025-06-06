@@ -4,7 +4,7 @@
 
 ## Description
 
-Project clone youtube with nestjs frame
+Project clone facebook with nestjs 
 
 ## 🐳 Docker Setup Guide for Local Development
 
@@ -41,7 +41,7 @@ docker-compose -f docker-compose.yml -f docker-compose.dev.yml build dev
 docker-compose -f docker-compose.yml -f docker-compose.dev.yml up dev
 ```
 
-- Dev API available at: http://localhost:3002
+- Dev API available at: http://localhost:3301
 - Uses `ts-node-dev` for automatic reload on code change
 
 > 💡 To watch logs in real-time:  
