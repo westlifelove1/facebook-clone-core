@@ -27,7 +27,7 @@ export class CommentService {
         const comment = this.commentRepository.create({
             content: createCommentDto.content,
             author: user,
-            post,
+            post: post,
         });
 
         if (createCommentDto.parentCommentId) {

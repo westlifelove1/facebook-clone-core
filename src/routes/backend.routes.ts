@@ -8,6 +8,8 @@ import { PermissionModule } from 'src/modules/backend/permission/permission.modu
 import { GroupPermissionModule } from 'src/modules/backend/group-permission/group-permission.module';
 import { ReactionModule } from 'src/modules/backend/reaction/reaction.module';
 import { CommentModule } from 'src/modules/backend/comment/comment.module';
+import { Post } from '@nestjs/common';
+import { PostModule } from 'src/modules/backend/post/post.module';
 
 export const backendRoutes: Routes = [
     { path: 'backend/user', module: UserModule },
@@ -19,6 +21,7 @@ export const backendRoutes: Routes = [
     { path: 'backend/group-permission', module: GroupPermissionModule },
     { path: 'backend/reaction', module: ReactionModule },
     { path: 'backend/comment', module: CommentModule },
+    { path: 'backend/post', module: PostModule },
 ];
 
 export const backendModules = [
@@ -31,4 +34,5 @@ export const backendModules = [
     SettingModule,
     ReactionModule,
     CommentModule,
+    PostModule,
 ];

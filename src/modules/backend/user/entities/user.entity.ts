@@ -47,8 +47,6 @@ export class User {
     @ManyToMany(() => GroupPermission, (groupPermission) => groupPermission.users)
     groupPermissions: GroupPermission[];
 
-    // @OneToMany(() => Video, (video) => video.user)
-    // videos: Video[];
 
     @OneToMany(() => Post, (post) => post.author)
     posts: Post[];
