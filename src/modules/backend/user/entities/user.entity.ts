@@ -2,8 +2,11 @@
 
 import { Column, Entity, PrimaryGeneratedColumn, OneToOne, OneToMany, UpdateDateColumn, CreateDateColumn, JoinColumn, ManyToMany, JoinTable } from "typeorm";
 import { Auth } from 'src/modules/backend/auth/entities/auth.entity';
-import { Video } from "src/modules/backend/video/entities/video.entity";
+// import { Video } from "src/modules/backend/video/entities/video.entity";
 import { GroupPermission } from "../../group-permission/entities/group-permission.entity";
+import { Post } from "../../post/entities/post.entity";
+import { Comment } from "../../comment/entities/comment.entity";
+import { Reaction } from "../../reaction/entities/reaction.entity";
 
 @Entity()
 export class User {
@@ -44,6 +47,15 @@ export class User {
     @ManyToMany(() => GroupPermission, (groupPermission) => groupPermission.users)
     groupPermissions: GroupPermission[];
 
-    @OneToMany(() => Video, (video) => video.user)
-    videos: Video[];
+    // @OneToMany(() => Video, (video) => video.user)
+    // videos: Video[];
+
+    @OneToMany(() => Post, (post) => post.author)
+    posts: Post[];
+
+    @OneToMany(() => Comment, (comment) => comment.author)
+    comments: Comment[];
+
+    @OneToMany(() => Reaction, (reaction) => reaction.user)
+    reactions: Reaction[];
 }

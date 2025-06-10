@@ -1,0 +1,37 @@
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { JwtModule } from '@nestjs/jwt';
+import { ElasticsearchModule } from '@nestjs/elasticsearch';
+import { CommentService } from './comment.service';
+import { CommentController } from './comment.controller';
+import { Comment } from './entities/comment.entity';
+import { Post } from '../post/entities/post.entity';
+import { SearchService } from '../search/search.service';
+import configuration from 'src/config/configuration';
+import { ClientsModule } from '@nestjs/microservices';
+import { ConfigService } from '@nestjs/config';
+import { rabbitMqConfig } from 'src/service/rabbitMQ/rabbitmq.config';
+
+@Module({
+    imports: [
+        TypeOrmModule.forFeature([Comment, Post]),
+        JwtModule.register({
+            secret: configuration().jwt.secret,
+            signOptions: { expiresIn: configuration().jwt.expires || '1h'},
+        }),
+        ElasticsearchModule.register({
+            node: configuration().elasticsearch.node,
+        }),
+        ClientsModule.registerAsync([
+            {
+                name: 'APP_SERVICE',
+                inject: [ConfigService],
+                useFactory: (configService: ConfigService) => rabbitMqConfig(configService),
+            },
+        ]),
+    ],
+    controllers: [CommentController],
+    providers: [CommentService, SearchService],
+    exports: [CommentService, SearchService]
+})
+export class CommentModule {}
