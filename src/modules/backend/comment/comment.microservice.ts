@@ -10,7 +10,7 @@ export class CommentMicroservice {
 
     // Khi có comment mới được tạo, se index comment vào ES
     @EventPattern('index_comment')
-    async handleMessage(@Payload() data: { index: string; document: any }) {
+    async handleIndexComment(@Payload() data: { index: string; document: any }) {
         console.log('handleIndexComment', data);
         return this.commentSearchService.indexComment(data.document);
     }

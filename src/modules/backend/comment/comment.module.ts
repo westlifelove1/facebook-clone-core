@@ -6,7 +6,6 @@ import { CommentService } from './comment.service';
 import { CommentController } from './comment.controller';
 import { Comment } from './entities/comment.entity';
 import { Post } from '../post/entities/post.entity';
-import { SearchService } from '../search/search.service';
 import { CommentSearchService } from './comment-search.service';
 import configuration from 'src/config/configuration';
 import { ClientsModule } from '@nestjs/microservices';
