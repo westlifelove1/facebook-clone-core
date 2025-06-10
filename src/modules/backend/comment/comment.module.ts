@@ -7,6 +7,7 @@ import { CommentController } from './comment.controller';
 import { Comment } from './entities/comment.entity';
 import { Post } from '../post/entities/post.entity';
 import { SearchService } from '../search/search.service';
+import { CommentSearchService } from './comment-search.service';
 import configuration from 'src/config/configuration';
 import { ClientsModule } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
@@ -31,7 +32,7 @@ import { rabbitMqConfig } from 'src/service/rabbitMQ/rabbitmq.config';
         ]),
     ],
     controllers: [CommentController],
-    providers: [CommentService, SearchService],
-    exports: [CommentService, SearchService]
+    providers: [CommentService, CommentSearchService],
+    exports: [CommentService, CommentSearchService]
 })
 export class CommentModule {}
