@@ -12,6 +12,7 @@ import configuration from 'src/config/configuration';
 import { ClientsModule } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
 import { rabbitMqConfig } from 'src/service/rabbitMQ/rabbitmq.config';
+import { CommentMicroservice } from './comment.microservice';
 
 @Module({
     imports: [
@@ -31,7 +32,7 @@ import { rabbitMqConfig } from 'src/service/rabbitMQ/rabbitmq.config';
             },
         ]),
     ],
-    controllers: [CommentController],
+    controllers: [CommentController, CommentMicroservice],
     providers: [CommentService, CommentSearchService],
     exports: [CommentService, CommentSearchService]
 })

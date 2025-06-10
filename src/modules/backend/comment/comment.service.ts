@@ -43,7 +43,7 @@ export class CommentService {
         const savedComment = await this.commentRepository.save(comment);
 
         // Index the comment in Elasticsearch
-        this.client.emit('index_comment', {
+        this.client.send('index_comment', {
             index: 'comment',
             document: savedComment,
         }).subscribe();
