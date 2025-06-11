@@ -84,19 +84,19 @@ export class CommentSearchService implements OnApplicationBootstrap {
                                 },
                             },
                         },
-                        {
-                            nested: {
-                                path: 'author',
-                                query: {
-                                    match: {
-                                        'author.fullname': {
-                                            query: q,
-                                            fuzziness: 'auto',
-                                        },
-                                    },
-                                },
-                            },
-                        },
+                        // {
+                        //     nested: {
+                        //         path: 'author',
+                        //         query: {
+                        //             match: {
+                        //                 'author.fullname': {
+                        //                     query: q,
+                        //                     fuzziness: 'auto',
+                        //                 },
+                        //             },
+                        //         },
+                        //     },
+                        // },
                     ],
                 },
             }

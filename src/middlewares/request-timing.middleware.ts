@@ -17,7 +17,7 @@ export class RequestTimingMiddleware implements NestMiddleware {
 
             res.on('finish', async () => {
                 const duration = Date.now() - startTime;
-                console.log(`[${req.method}] ${req.originalUrl} - ${duration}ms`);
+                // console.log(`[${req.method}] ${req.originalUrl} - ${duration}ms`);
 
                 if (duration > 5000) {
                     // send discord notification

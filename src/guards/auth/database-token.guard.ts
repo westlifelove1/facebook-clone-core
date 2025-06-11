@@ -43,7 +43,7 @@ export class DatabaseTokenGuard implements CanActivate {
                 relations: ['user']
             });
 
-            console.log(tokenEntity);
+            // console.log(tokenEntity);
 
             if (!tokenEntity) {
                 throw new HttpException('Invalid token Custom', HttpStatus.UNAUTHORIZED);

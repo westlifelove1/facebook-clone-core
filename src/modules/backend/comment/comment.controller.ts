@@ -29,6 +29,7 @@ export class CommentController {
         @Query('page') page?: number,
         @Query('limit') limit?: number,
     ) {
+        console.log(q);
         return this.commentSearchService.searchComments(q, page, limit);
     }
 

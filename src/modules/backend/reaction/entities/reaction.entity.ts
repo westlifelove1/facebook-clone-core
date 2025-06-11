@@ -22,10 +22,10 @@ export class Reaction {
     })
     type: ReactionType;
 
-    @ManyToOne(() => User, user => user.reactions)
+    @ManyToOne(() => User, (user) => user.reactions)
     user: User;
 
-    @ManyToOne(() => Post, post => post.reactions)
+    @ManyToOne(() => Post, (post) => post.reactions)
     post: Post;
 
     @CreateDateColumn()

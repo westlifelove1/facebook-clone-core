@@ -15,13 +15,19 @@ export class CommentService {
         private commentRepository: Repository<Comment>,
         @InjectRepository(Post)
         private postRepository: Repository<Post>,
+        @InjectRepository(User)
+        private userRepository: Repository<User>,
         @Inject('APP_SERVICE') private readonly client: ClientProxy,
     ) {}
 
-    async create(createCommentDto: CreateCommentDto, user: User): Promise<Comment> {
+    async create(createCommentDto: CreateCommentDto, userRequest: UserRequest): Promise<Comment> {
         const post = await this.postRepository.findOne({ where: { id: createCommentDto.postId } });
         if (!post) {
             throw new HttpException(`Bai viet khong ton tai`, HttpStatus.BAD_REQUEST);
+        }
+        const user = await this.userRepository.findOne({ where: { id: userRequest.sub } });
+        if (!user) {
+            throw new HttpException(`Tai khoan khong ton tai`, HttpStatus.BAD_REQUEST);
         }
 
         const comment = this.commentRepository.create({
@@ -43,7 +49,7 @@ export class CommentService {
         const savedComment = await this.commentRepository.save(comment);
 
         // Index the comment in Elasticsearch
-        this.client.send('index_comment', {
+        this.client.send('index.comment', {
             index: 'comment',
             document: savedComment,
         }).subscribe();
@@ -51,14 +57,14 @@ export class CommentService {
         return savedComment;
     }
 
-    async findAll(): Promise<Comment[]> {
-        return this.commentRepository.find({
-            relations: ['author', 'post', 'parentComment', 'replies'],
-            order: {
-                createdAt: 'DESC'
-            }
-        });
-    }
+    // async findAll(): Promise<Comment[]> {
+    //     return this.commentRepository.find({
+    //         relations: ['author', 'post', 'parentComment', 'replies'],
+    //         order: {
+    //             createdAt: 'DESC'
+    //         }
+    //     });
+    // }
 
     async findOne(id: number): Promise<Comment> {
         const comment = await this.commentRepository.findOne({
@@ -92,7 +98,7 @@ export class CommentService {
         await this.commentRepository.remove(comment);
         
         // Delete the comment from Elasticsearch
-        this.client.emit('delete_comment_index', {
+        this.client.emit('delete.comment', {
             commentId: id,
         }).subscribe();
     }

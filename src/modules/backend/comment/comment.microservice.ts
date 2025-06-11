@@ -9,14 +9,14 @@ export class CommentMicroservice {
     ) {}
 
     // Khi có comment mới được tạo, se index comment vào ES
-    @EventPattern('index_comment')
+    @EventPattern('index.comment')
     async handleIndexComment(@Payload() data: { index: string; document: any }) {
-        console.log('handleIndexComment', data);
+        // console.log('handleIndexComment', data);
         return this.commentSearchService.indexComment(data.document);
     }
 
     // Khi có comment được xoá, se xoá comment khỏi ES
-    @EventPattern('delete_comment_index')
+    @EventPattern('delete.comment')
     async handleDeletecommentIndex(@Payload() data: { commentId: number }) {
         return this.commentSearchService.deleteCommentFromIndex(data.commentId);
     }
