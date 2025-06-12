@@ -22,7 +22,7 @@ export class AuthController {
         examples: {
             example1: {
                 value: {
-                    email: 'hoa@gmail.com',
+                    email: 'emailtesting@gmail.com',
                     password: '123456',
                 }
             }
@@ -91,9 +91,9 @@ export class AuthController {
         examples: {
             example1: {
                 value: {
-                    email: 'hoa@gmail.com',
+                    email: 'emailtesting@gmail.com',
                     password: '123456',
-                    fullname: 'Trọng Hoá'
+                    fullname: 'User Testing',
                 }
             }
         }
