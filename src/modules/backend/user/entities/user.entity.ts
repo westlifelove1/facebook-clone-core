@@ -48,7 +48,7 @@ export class User {
     groupPermissions: GroupPermission[];
 
 
-    @OneToMany(() => Post, (post) => post.author)
+    @OneToMany(() => Post, (post) => post.user)
     posts: Post[];
 
     @OneToMany(() => Comment, (comment) => comment.author)

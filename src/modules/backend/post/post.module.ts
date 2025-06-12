@@ -12,10 +12,11 @@ import { ConfigService } from '@nestjs/config';
 import { rabbitMqConfig } from 'src/service/rabbitMQ/rabbitmq.config';
 import { PostMicroservice } from './post.microservice';
 import { PostSearchService } from './post-search.service';
+import { User } from '../user/entities/user.entity';
 
 @Module({
   imports: [
-        TypeOrmModule.forFeature([Post]),
+        TypeOrmModule.forFeature([Post, User]),
         JwtModule.register({
             secret: configuration().jwt.secret,
             signOptions: { expiresIn: configuration().jwt.expires || '1h'},

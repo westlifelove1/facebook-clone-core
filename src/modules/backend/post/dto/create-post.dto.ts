@@ -6,8 +6,11 @@ export class CreatePostDto {
     @IsNotEmpty()
     content: string;
 
-    mediaUrl: JSON;
+    @IsNumber()
+    isType: number; // 0: public, 1: friends, 2: only me
+
+    mediaUrl: Record<string, any>;;
 
     @IsNumber()
-    authorId?: number;
+    userId?: number;
 }

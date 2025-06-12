@@ -16,14 +16,23 @@ export class Post {
     @PrimaryGeneratedColumn()
     id: number;
 
+    @Column('smallint', { default: 0 })
+    isType: number; // 0: public, 1: friends, 2: only me
+
     @Column('text')
     content: string;
 
-    @Column({ nullable: true })
-    mediaUrl: string;
+    @Column('json', { nullable: true })
+    mediaUrl: Record<string, any>; // or just `any`
+
+    @CreateDateColumn()
+    createdAt: Date;
+
+    @UpdateDateColumn()
+    updatedAt: Date;
 
     @ManyToOne(() => User, user => user.posts)
-    author: User;
+    user: User;
 
     @OneToMany(() => Comment, comment => comment.post)
     comments: Comment[];
@@ -31,9 +40,5 @@ export class Post {
     @OneToMany(() => Reaction, reaction => reaction.post)
     reactions: Reaction[];
 
-    @CreateDateColumn()
-    createdAt: Date;
-
-    @UpdateDateColumn()
-    updatedAt: Date;
+    
 } 
