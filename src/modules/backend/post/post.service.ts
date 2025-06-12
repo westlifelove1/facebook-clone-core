@@ -16,7 +16,6 @@ export class PostService {
         private postRepository: Repository<Post>,
         @InjectRepository(User)
         private userRepository: Repository<User>,
-
         @Inject('APP_SERVICE') private readonly client: ClientProxy,
     ) {}
   
@@ -24,17 +23,21 @@ export class PostService {
 
         const user = await this.userRepository.findOne({ where: { id: userRequest.sub } });
         if (!user) {
-            throw new HttpException(`Tai khoan khong ton tai`, HttpStatus.BAD_REQUEST);
+            throw new HttpException(`User not found`, HttpStatus.BAD_REQUEST);
         }
 
         const postData = this.postRepository.create({
           content: createPostDto.content,
           isType: createPostDto.isType,
           mediaUrl: createPostDto.mediaUrl,
-          user: user,
+          friends: createPostDto.friends,
+          user: user, 
         });
 
         const post = await this.postRepository.save(postData);
+        post.userId = user.id; 
+        
+        console.log('Post created:', post);
         this.client.send('index_post', {
             index: 'post',
             document: post,
@@ -42,6 +45,7 @@ export class PostService {
 
         return post;
   }
+
 
   findAll() {
     return this.postRepository.find({

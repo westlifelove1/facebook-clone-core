@@ -25,6 +25,10 @@ export class Post {
     @Column('json', { nullable: true })
     mediaUrl: Record<string, any>; // or just `any`
 
+
+    @Column('json', { nullable: true })
+    friends: Record<string, any>; 
+
     @CreateDateColumn()
     createdAt: Date;
 
@@ -39,6 +43,7 @@ export class Post {
 
     @OneToMany(() => Reaction, reaction => reaction.post)
     reactions: Reaction[];
+  userId: number;
 
     
 } 

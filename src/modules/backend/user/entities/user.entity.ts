@@ -2,8 +2,6 @@
 
 import { Column, Entity, PrimaryGeneratedColumn, OneToOne, OneToMany, UpdateDateColumn, CreateDateColumn, JoinColumn, ManyToMany, JoinTable } from "typeorm";
 import { Auth } from 'src/modules/backend/auth/entities/auth.entity';
-// import { Video } from "src/modules/backend/video/entities/video.entity";
-import { GroupPermission } from "../../group-permission/entities/group-permission.entity";
 import { Post } from "../../post/entities/post.entity";
 import { Comment } from "../../comment/entities/comment.entity";
 import { Reaction } from "../../reaction/entities/reaction.entity";
@@ -43,9 +41,6 @@ export class User {
     @OneToOne(() => Auth, (auth) => auth.user, { cascade: true })
     @JoinColumn()
     auth: Auth;
-
-    @ManyToMany(() => GroupPermission, (groupPermission) => groupPermission.users)
-    groupPermissions: GroupPermission[];
 
 
     @OneToMany(() => Post, (post) => post.user)

@@ -13,7 +13,6 @@ export interface AuthResponse {
         email: string;
         fullname: string;
         avatar: string;
-        roles: string[];
     };
 }
 
@@ -29,21 +28,11 @@ export const generateAuthResponse = (
     auth: Auth,
 ): AuthResponse => {
     const user = auth.user;
-    const roles = Array.from(
-        new Set(
-            user.groupPermissions.flatMap(gp =>
-                gp.permissions.map(p => p.role)
-            )
-        )
-    );
-
-    
-
+   
     const payload = {
         sub: user.id,
         email: user.email,
         fullname: user.fullname,
-        roles: roles.join('|')
     };
 
     const tokens = generateTokens(jwtService, payload);
@@ -54,7 +43,6 @@ export const generateAuthResponse = (
             email: auth.email,
             fullname: auth.fullname,
             avatar: user.avatar,
-            roles: roles
         }
     };
 };
