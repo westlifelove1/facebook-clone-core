@@ -15,24 +15,22 @@ export class CommentService {
         private commentRepository: Repository<Comment>,
         @InjectRepository(Post)
         private postRepository: Repository<Post>,
-        @InjectRepository(User)
-        private userRepository: Repository<User>,
         @Inject('APP_SERVICE') private readonly client: ClientProxy,
     ) {}
 
-    async create(createCommentDto: CreateCommentDto, userRequest: UserRequest): Promise<Comment> {
+    async create(createCommentDto: CreateCommentDto, userId: number): Promise<any> {
         const post = await this.postRepository.findOne({ where: { id: createCommentDto.postId } });
         if (!post) {
             throw new HttpException(`Bai viet khong ton tai`, HttpStatus.BAD_REQUEST);
         }
-        const user = await this.userRepository.findOne({ where: { id: userRequest.sub } });
-        if (!user) {
-            throw new HttpException(`Tai khoan khong ton tai`, HttpStatus.BAD_REQUEST);
-        }
-
+        // const user = await this.userRepository.findOne({ where: { id: userId } });
+        // if (!user) {
+        //     throw new HttpException(`Tai khoan khong ton tai`, HttpStatus.BAD_REQUEST);
+        // }
+        // console.log(JSON.stringify(user, null, 4));
         const comment = this.commentRepository.create({
             content: createCommentDto.content,
-            author: user,
+            author: { id: userId } as User,
             post: post,
         });
 
@@ -46,15 +44,18 @@ export class CommentService {
             comment.parentComment = parentComment;
         }
 
-        const savedComment = await this.commentRepository.save(comment);
+        const newComment = await this.commentRepository.save(comment);
 
         // Index the comment in Elasticsearch
         this.client.send('index.comment', {
             index: 'comment',
-            document: savedComment,
+            document: newComment,
         }).subscribe();
 
-        return savedComment;
+        return {
+            msg: "success",
+            data: newComment
+        };
     }
 
     // async findAll(): Promise<Comment[]> {
@@ -79,7 +80,7 @@ export class CommentService {
         return comment;
     }
 
-    async update(id: number, updateCommentDto: UpdateCommentDto): Promise<Comment> {
+    async update(id: number, updateCommentDto: UpdateCommentDto): Promise<any> {
         const comment = await this.findOne(id);
         Object.assign(comment, updateCommentDto);
         const updatedComment = await this.commentRepository.save(comment);
@@ -90,7 +91,10 @@ export class CommentService {
             document: updatedComment,
         }).subscribe();
 
-        return updatedComment;
+        return {
+            msg: "success",
+            data: updatedComment
+        };
     }
 
     async remove(id: number): Promise<void> {

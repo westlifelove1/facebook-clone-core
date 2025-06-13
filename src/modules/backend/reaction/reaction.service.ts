@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Reaction } from './entities/reaction.entity';
@@ -7,6 +7,8 @@ import { CreateReactionDto } from './dto/create-reaction.dto';
 import { UpdateReactionDto } from './dto/update-reaction.dto';
 import { User } from '../user/entities/user.entity';
 import { Post } from '../post/entities/post.entity';
+import { RedisService } from 'src/service/redis/redis.service';
+import { Redis } from 'ioredis';
 
 
 @Injectable()
@@ -16,24 +18,33 @@ export class ReactionService {
         private reactionRepository: Repository<Reaction>,
         @InjectRepository(Post)
         private postRepository: Repository<Post>,
-        @InjectRepository(User)
-        private userRepository: Repository<User>,
+        // private readonly redisService: RedisService,
+        @Inject('REDIS_CLIENT') private readonly redis: Redis
     ) {}
 
-    async create(createReactionDto: CreateReactionDto, userRequest: UserRequest): Promise<Reaction> {
+    private getReactionSetKey(postId: number, reaction: string) {
+        console.log(`post:${postId}:${reaction}`);
+        return `post:${postId}:${reaction}`;
+      }
+    
+      private getReactionCountKey(postId: number) {
+        return `post:${postId}:reactions`;
+      }
+
+    async create(createReactionDto: CreateReactionDto, userId: number): Promise<any> {
         const post = await this.postRepository.findOne({ where: { id: createReactionDto.postId } });
         if (!post) {
             throw new HttpException(`Bai viet khong ton tai`, HttpStatus.BAD_REQUEST);
         }
-        const user = await this.userRepository.findOne({ where: { id: userRequest.sub } });
-        if (!user) {
-            throw new HttpException(`Tai khoan khong ton tai`, HttpStatus.BAD_REQUEST);
-        }
+        // const user = await this.userRepository.findOne({ where: { id: userId } });
+        // if (!user) {
+        //     throw new HttpException(`Tai khoan khong ton tai`, HttpStatus.BAD_REQUEST);
+        // }
 
         // Check if user already reacted to this post
         const existingReaction = await this.reactionRepository.findOne({
             where: {
-                user: { id: user.id },
+                user: { id: userId },
                 post: { id: post.id }
             }
         });
@@ -53,12 +64,19 @@ export class ReactionService {
         // this.reactionRepository.save(reaction);
 
         // Create new reaction option 2
-        const newReaction = this.reactionRepository.create({
+        const newReaction = await this.reactionRepository.create({
             type: createReactionDto.type,
-            user,
+            user: { id: userId } as User,
             post
         });
-        return this.reactionRepository.save(newReaction);
+        const reaction = await this.reactionRepository.save(newReaction);
+
+        await this.redis.sadd(this.getReactionSetKey(createReactionDto.postId, createReactionDto.type), userId);
+
+        return {
+            msg: "success",
+            data: reaction
+        }
     }
 
     async findAll(): Promise<Reaction[]> {

@@ -6,15 +6,16 @@ import { ReactionController } from './reaction.controller';
 import { Reaction } from './entities/reaction.entity';
 import { Post } from '../post/entities/post.entity';
 import configuration from 'src/config/configuration';
-import { User } from '../user/entities/user.entity';
+import { RedisModule } from 'src/service/redis/redis.module';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([Reaction, Post, User]),
+        TypeOrmModule.forFeature([Reaction, Post]),
         JwtModule.register({
             secret: configuration().jwt.secret,
             signOptions: { expiresIn: configuration().jwt.expires || '1h'},
         }),
+        RedisModule,
     ],
     controllers: [ReactionController],
     providers: [ReactionService],
