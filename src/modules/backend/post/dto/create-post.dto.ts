@@ -9,7 +9,9 @@ export class CreatePostDto {
     @IsNumber()
     isType: number; // 0: public, 1: friends, 2: only me
 
-    mediaUrl: Record<string, any>;;
+    mediaUrl: Record<string, any>;
+
+    friends: Record<string, any>; // Optional field for friends
 
     @IsNumber()
     userId?: number;

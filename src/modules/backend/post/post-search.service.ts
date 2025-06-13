@@ -1,5 +1,6 @@
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { ElasticsearchService } from '@nestjs/elasticsearch';
+import { QueryFailedError } from 'typeorm';
 
 @Injectable()
 export class PostSearchService implements OnApplicationBootstrap {
@@ -28,7 +29,7 @@ export class PostSearchService implements OnApplicationBootstrap {
                         },
                         createdAt: { type: 'date', format: 'strict_date_optional_time||epoch_millis' },
                         updatedAt: { type: 'date', format: 'strict_date_optional_time||epoch_millis' },
-                        author: {
+                        user: {
                             properties: {
                                 id: { type: 'integer' },
                                 fullname: {
@@ -56,51 +57,105 @@ export class PostSearchService implements OnApplicationBootstrap {
         });
     }
 
-    async searchPosts(q?: string, page = 1, limit = 10) {
+    async searchPosts(userRequest: UserRequest, q?: string, page = 1, limit = 10) {
         const from = (page - 1) * limit;
         const isNumber = q && /^\d+$/.test(q);
-
-        // If no query, match all
-        const query: any = q
-            ? {
-                bool: {
-                    should: [
-                        {
-                            match: {
-                                content: {
-                                    query: q,
-                                    fuzziness: 'auto',
+        const userId = userRequest?.sub;    
+        console.log("userId:", userId); 
+        const query: any = {
+                            "bool": {
+                            "should": [
+                                {
+                                "term": {
+                                    "isType": 0
+                                }
                                 },
-                            },
-                        },
-                        {
-                            nested: {
-                                path: 'author',
-                                query: {
-                                    match: {
-                                        'author.fullname': {
-                                            query: q,
-                                            fuzziness: 'auto',
-                                        },
-                                    },
-                                },
-                            },
-                        },
-                    ],
-                },
-            }
-            : {
-                match_all: {},
-            };
+                                {
+                                "script": {
+                                    "script": {
+                                    "source": "for (f in doc['friends']) { if (f == params.userId) return true; } return false;",
+                                    "lang": "painless",
+                                    "params": {
+                                        "userId": userId
+                                    }
+                                    }
+                                }
+                                }
+                            ]
+                            }
+                        
+                    }
+        // const query: any = q
+        //     ? {
+        //         bool: {
+        //             should: [
+        //                 {
+        //                     match: {
+        //                         content: {
+        //                             query: q,
+        //                             fuzziness: 'auto',
+        //                         },
+        //                         isType:0,
+        //                     },
+        //                 },
+        //                 {
+        //                     nested: {
+        //                         path: 'user',
+        //                         query: {
+        //                             match: {
+        //                                 'user.fullname': {
+        //                                     query: q,
+        //                                     fuzziness: 'auto',
+        //                                 },
+        //                             },
+        //                         },
+        //                     },
+        //                 },
+        //             ],
+        //         },
+        //     }
+        //     : {
+               
+        //     };
 
-        // If query is a number, add ID match condition
-        if (q && isNumber) {
-            query.bool.should.push({
-                term: {
-                    id: parseInt(q),
-                },
-            });
-        }
+        // // If query is a number, add ID match condition
+        // if (q && isNumber) {
+        //     query.bool.should.push({
+        //         term: {
+        //             id: parseInt(q),
+        //         },
+        //     });
+        // }else{
+        //     const query: any = {
+        //         "query": {
+        //             "bool": {
+        //             "should": [
+        //                 {
+        //                 "term": {
+        //                     "isType": 0
+        //                 }
+        //                 },
+        //                 {
+        //                 "script": {
+        //                     "script": {
+        //                     "source": "doc['friends'].contains(params.userId)",
+        //                     "lang": "painless",
+        //                     "params": {
+        //                         "userId": userId
+        //                     }
+        //                     }
+        //                 }
+        //                 }
+        //             ]
+        //             }
+        //         }
+        //     }
+         
+            
+        // }
+
+        console.log('Search query:', JSON.stringify(query));
+
 
         const result = await this.searchService.search({
             index: this.indexEs,
