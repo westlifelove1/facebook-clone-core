@@ -61,100 +61,56 @@ export class PostSearchService implements OnApplicationBootstrap {
         const from = (page - 1) * limit;
         const isNumber = q && /^\d+$/.test(q);  
         console.log("userId:", userId); 
+
         const query: any = {
-                            "bool": {
-                            "should": [
-                                {
-                                "term": {
-                                    "isType": 0
-                                }
-                                },
-                                {
-                                "script": {
-                                    "script": {
-                                    "source": "for (f in doc['friends']) { if (f == params.userId) return true; } return false;",
-                                    "lang": "painless",
-                                    "params": {
-                                        "userId": userId
-                                    }
-                                    }
-                                }
-                                }
-                            ]
-                            }
-                        
+            bool: {
+                must: [
+                    {
+                        term: {
+                            isType: 0
+                        }
                     }
-        // const query: any = q
-        //     ? {
-        //         bool: {
-        //             should: [
-        //                 {
-        //                     match: {
-        //                         content: {
-        //                             query: q,
-        //                             fuzziness: 'auto',
-        //                         },
-        //                         isType:0,
-        //                     },
-        //                 },
-        //                 {
-        //                     nested: {
-        //                         path: 'user',
-        //                         query: {
-        //                             match: {
-        //                                 'user.fullname': {
-        //                                     query: q,
-        //                                     fuzziness: 'auto',
-        //                                 },
-        //                             },
-        //                         },
-        //                     },
-        //                 },
-        //             ],
-        //         },
-        //     }
-        //     : {
-               
-        //     };
+                ]
+            }
+        };
 
-        // // If query is a number, add ID match condition
-        // if (q && isNumber) {
-        //     query.bool.should.push({
-        //         term: {
-        //             id: parseInt(q),
-        //         },
-        //     });
-        // }else{
-        //     const query: any = {
-        //         "query": {
-        //             "bool": {
-        //             "should": [
-        //                 {
-        //                 "term": {
-        //                     "isType": 0
-        //                 }
-        //                 },
-        //                 {
-        //                 "script": {
-        //                     "script": {
-        //                     "source": "doc['friends'].contains(params.userId)",
-        //                     "lang": "painless",
-        //                     "params": {
-        //                         "userId": userId
-        //                     }
-        //                     }
-        //                 }
-        //                 }
-        //             ]
-        //             }
-        //         }
-        //     }
-         
+        // Add search term if provided
+        if (q) {
+            query.bool.should = [
+                {
+                    match: {
+                        content: {
+                            query: q,
+                            fuzziness: 'auto'
+                        }
+                    }
+                },
+                {
+                    nested: {
+                        path: 'user',
+                        query: {
+                            match: {
+                                'user.fullname': {
+                                    query: q,
+                                    fuzziness: 'auto'
+                                }
+                            }
+                        }
+                    }
+                }
+            ];
             
-        // }
+            // If query is a number, add ID match
+            if (isNumber) {
+                query.bool.should.push({
+                    term: {
+                        id: parseInt(q)
+                    }
+                });
+            }
+        }
 
-        console.log('Search query:', JSON.stringify(query));
-
+        // console.log('Search query:', JSON.stringify(query));
 
         const result = await this.searchService.search({
             index: this.indexEs,
