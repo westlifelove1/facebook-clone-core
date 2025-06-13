@@ -57,10 +57,9 @@ export class PostSearchService implements OnApplicationBootstrap {
         });
     }
 
-    async searchPosts(userRequest: UserRequest, q?: string, page = 1, limit = 10) {
+    async searchPosts(userId: number, q?: string, page = 1, limit = 10) {
         const from = (page - 1) * limit;
-        const isNumber = q && /^\d+$/.test(q);
-        const userId = userRequest?.sub;    
+        const isNumber = q && /^\d+$/.test(q);  
         console.log("userId:", userId); 
         const query: any = {
                             "bool": {

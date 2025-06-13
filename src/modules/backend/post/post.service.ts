@@ -19,9 +19,9 @@ export class PostService {
         @Inject('APP_SERVICE') private readonly client: ClientProxy,
     ) {}
   
-  async create(createPostDto: CreatePostDto, userRequest: UserRequest) {
+  async create(createPostDto: CreatePostDto, userId: number) {
 
-        const user = await this.userRepository.findOne({ where: { id: userRequest.sub } });
+        const user = await this.userRepository.findOne({ where: { id: userId } });
         if (!user) {
             throw new HttpException(`User not found`, HttpStatus.BAD_REQUEST);
         }

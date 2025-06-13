@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query, BadRequestException } from '@nestjs/common';
 import { PostService } from './post.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
@@ -17,7 +17,11 @@ export class PostController {
 
   @Post()
   create(@Body() createPostDto: CreatePostDto, @Request() req) {
-    return this.postService.create(createPostDto, req.user);
+      const userId = Number(req.user?.sub);
+      if (!userId || isNaN(userId)) {
+          throw new BadRequestException('ID nguoi dung khong hop le');
+      }
+    return this.postService.create(createPostDto, userId);
   }
 
   @Get('news')
@@ -27,7 +31,11 @@ export class PostController {
           @Query('page') page?: number,
           @Query('limits') limit?: number
         ) {
-    return this.postSearchService.searchPosts(req.user, q, page, limit);
+        const userId = Number(req.user?.sub);
+        if (!userId || isNaN(userId)) {
+            throw new BadRequestException('ID nguoi dung khong hop le');
+        }
+    return this.postSearchService.searchPosts(userId, q, page, limit);
   }
 
   @Get(':id')
