@@ -5,7 +5,7 @@ import { IS_PUBLIC_KEY } from 'src/common/constants/meta-keys';
 import { extractTokenFromHeader } from 'src/utils/token/extractToken.utils';
 import configuration from 'src/config/configuration';
 import { decryptPayload } from 'src/utils/token/jwt-encrypt.utils';
-import { sendDiscordNotification } from 'src/utils/notification/discord.service';
+// import { sendDiscordNotification } from 'src/utils/notification/discord.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -27,14 +27,14 @@ export class AuthGuard implements CanActivate {
         
         if (!token){
             // send discord notification
-            await sendDiscordNotification({
-                level: 'error',
-                title: '🚨 Auth Guard Error',
-                fields: {
-                    'Error': 'No token provided',
-                    'Time': new Date().toISOString(),
-                },
-            });
+            // await sendDiscordNotification({
+            //     level: 'error',
+            //     title: '🚨 Auth Guard Error',
+            //     fields: {
+            //         'Error': 'No token provided',
+            //         'Time': new Date().toISOString(),
+            //     },
+            // });
             // send discord notification
 
             throw new HttpException('No token provided', HttpStatus.UNAUTHORIZED);
@@ -46,24 +46,21 @@ export class AuthGuard implements CanActivate {
             });
 
             const dataPayload = decryptPayload(decodeToken.data) as JwtDecryptedPayload;
-            const userRoles = dataPayload.roles.split('|');
             request.user = dataPayload; // Gắn vào request
-            // console.log('request.user', request.user);
             // console.log('userRoles', userRoles);
             // request.user.roles = userRoles;
             return true;
         } catch (error) {
             // send discord notification
-            await sendDiscordNotification({
-                level: 'error',
-                title: '🚨 Auth Guard Error',
-                fields: {
-                    'Error': error.message,
-                    'Time': new Date().toISOString(),
-                },
-            });
+            // await sendDiscordNotification({
+            //     level: 'error',
+            //     title: '🚨 Auth Guard Error',
+            //     fields: {
+            //         'Error': error.message,
+            //         'Time': new Date().toISOString(),
+            //     },
+            // });
             // send discord notification
-
             // Handle JWT-specific errors
             switch (error.name) {
                 case 'TokenExpiredError':

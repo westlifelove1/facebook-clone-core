@@ -3,10 +3,7 @@ import { CreateUserDto } from './create-user.dto';
 import { IsOptional, IsString, MaxLength, Matches, IsArray, IsNumber } from 'class-validator';
 
 export class UpdateUserDto extends OmitType(PartialType(CreateUserDto), ['email'] as const) {
-    @IsOptional()
-    @IsArray()
-    @IsNumber({}, { each: true })
-    groupPermissionIds?: number[];
+    
 }
 
 export class UpdateMeUserDto {

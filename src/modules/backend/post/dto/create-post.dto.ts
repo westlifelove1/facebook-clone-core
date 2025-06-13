@@ -12,7 +12,4 @@ export class CreatePostDto {
     mediaUrl: Record<string, any>;
 
     friends: Record<string, any>; // Optional field for friends
-
-    @IsNumber()
-    userId?: number;
 }

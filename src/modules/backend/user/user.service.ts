@@ -82,7 +82,7 @@ export class UserService {
     }
 
     async update(id: number, updateUserDto: UpdateUserDto): Promise<any> {
-        const user = await this.userRepository.findOne({ where: { id }, relations: ['groupPermissions'] });
+        const user = await this.userRepository.findOne({ where: { id } });
         if (!user) {
             throw new HttpException('User not found', HttpStatus.NOT_FOUND);
         }
@@ -90,9 +90,7 @@ export class UserService {
             throw new HttpException('You are not allowed to update email', HttpStatus.BAD_REQUEST);
         }
 
-
-        // Xóa groupPermissionIds khỏi DTO để không bị save vào cột không tồn tại
-        const { groupPermissionIds, ...rest } = updateUserDto;
+        const {...rest } = updateUserDto;
 
         const updatedUser = await this.userRepository.save({ ...user, ...rest });
         if (!updatedUser) {

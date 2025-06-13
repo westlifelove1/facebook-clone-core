@@ -36,10 +36,6 @@ export class ReactionService {
         if (!post) {
             throw new HttpException(`Bai viet khong ton tai`, HttpStatus.BAD_REQUEST);
         }
-        // const user = await this.userRepository.findOne({ where: { id: userId } });
-        // if (!user) {
-        //     throw new HttpException(`Tai khoan khong ton tai`, HttpStatus.BAD_REQUEST);
-        // }
 
         // Check if user already reacted to this post
         const existingReaction = await this.reactionRepository.findOne({
@@ -55,15 +51,7 @@ export class ReactionService {
             return this.reactionRepository.save(existingReaction);
         }
 
-        // Create new reaction option 1
-        // const reactionData = new Reaction();
-        // reactionData.type = createReactionDto.type;
-        // reactionData.post = post;
-        // reactionData.user = user;
-        // const reaction = this.reactionRepository.create(reactionData);
-        // this.reactionRepository.save(reaction);
-
-        // Create new reaction option 2
+        // Create new reaction
         const newReaction = await this.reactionRepository.create({
             type: createReactionDto.type,
             user: { id: userId } as User,

@@ -2,7 +2,6 @@ import { Controller, Get, Body, Param, Query, Put, Request, BadRequestException 
 import { UserService } from './user.service';
 import { User } from './entities/user.entity';
 import { UpdateUserDto, UpdateMeUserDto } from './dto/update-user.dto';
-import { Permissions } from 'src/decorators/permissions.decorator';
 import { ApiTags, ApiQuery, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody, ApiParam } from '@nestjs/swagger';
 
 @ApiTags('Backend / User')
@@ -71,7 +70,6 @@ export class UserController {
                     phone: '0123456789',
                     avatar: 'https://example.com/avatar.jpg',
                     isActive: true,
-                    groupPermission: [1, 2, 3]
                 }
             }
         }
@@ -87,7 +85,6 @@ export class UserController {
                 avatar: 'https://example.com/avatar.jpg',
                 email: 'user@example.com',
                 status: 'active',
-                groupPermission: [1, 2, 3],
                 createdAt: '2024-03-20T10:00:00Z',
                 updatedAt: '2024-03-20T10:00:00Z'
             }

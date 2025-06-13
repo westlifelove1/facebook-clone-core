@@ -33,7 +33,7 @@ export class AuthService {
         const { email, password } = loginDto;
         const auth = await this.authRepository.findOne({
             where: { email },
-            relations: ['user', 'user.groupPermissions', 'user.groupPermissions.permissions']
+            relations: ['user']
         });
         if (!auth) {
             throw new HttpException('Invalid email or password', HttpStatus.BAD_REQUEST);
@@ -174,7 +174,7 @@ export class AuthService {
             // Tìm user hoặc tạo mới
             const existingAuth = await this.authRepository.findOne({
                 where: { email },
-                relations: ['user', 'user.groupPermissions', 'user.groupPermissions.permissions']
+                relations: ['user']
             });
 
             if (existingAuth) {
