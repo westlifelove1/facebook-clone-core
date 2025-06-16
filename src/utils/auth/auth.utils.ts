@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { User } from '../../modules/backend/user/entities/user.entity';
 import * as bcrypt from 'bcrypt';
 import { generateRandomPassword } from '../token/jwt-encrypt.utils';
+import { integer } from '@elastic/elasticsearch/lib/api/types';
 
 export interface AuthResponse {
     accessToken: string;
@@ -12,7 +13,7 @@ export interface AuthResponse {
     user: {
         email: string;
         fullname: string;
-        avatar: string;
+        id: integer;
     };
 }
 
@@ -42,7 +43,7 @@ export const generateAuthResponse = (
         user: {
             email: auth.email,
             fullname: auth.fullname,
-            avatar: user.avatar,
+            id: user.id,
         }
     };
 };
