@@ -10,6 +10,7 @@ import {
 import { User } from 'src/modules/backend/user/entities/user.entity';
 import { Comment } from 'src/modules/backend/comment/entities/comment.entity';
 import { Reaction } from 'src/modules/backend/reaction/entities/reaction.entity';
+import { Photo } from '../../photo/entities/photo.entity';
 
 @Entity('post')
 export class Post {
@@ -43,7 +44,11 @@ export class Post {
 
     @OneToMany(() => Reaction, reaction => reaction.post)
     reactions: Reaction[];
-  userId: number;
+
+    @OneToMany(() => Photo, photo => photo.post, { cascade: true })
+    photos: Photo[];
+
+    userId: number;
 
     
 } 
