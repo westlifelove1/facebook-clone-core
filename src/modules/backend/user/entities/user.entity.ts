@@ -6,6 +6,8 @@ import { Post } from "../../post/entities/post.entity";
 import { Comment } from "../../comment/entities/comment.entity";
 import { Reaction } from "../../reaction/entities/reaction.entity";
 import { Profile } from '../../profile/entities/profile.entity';
+import { FriendRequest } from '../../friendrequest/entities/friendrequest.entity';
+
 
 @Entity()
 export class User {
@@ -55,4 +57,10 @@ export class User {
 
     @OneToOne(() => Profile, (profile) => profile.user, { cascade: true })
     profile: Profile;
+
+    @OneToMany(() => FriendRequest, (fr) => fr.sender)
+    sentFriendRequests: FriendRequest[];
+
+    @OneToMany(() => FriendRequest, (fr) => fr.receiver)
+    receivedFriendRequests: FriendRequest[];
 }
