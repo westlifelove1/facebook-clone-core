@@ -5,6 +5,7 @@ import { Auth } from 'src/modules/backend/auth/entities/auth.entity';
 import { Post } from "../../post/entities/post.entity";
 import { Comment } from "../../comment/entities/comment.entity";
 import { Reaction } from "../../reaction/entities/reaction.entity";
+import { Profile } from '../../profile/entities/profile.entity';
 
 @Entity()
 export class User {
@@ -51,4 +52,7 @@ export class User {
 
     @OneToMany(() => Reaction, (reaction) => reaction.user)
     reactions: Reaction[];
+
+    @OneToOne(() => Profile, (profile) => profile.user, { cascade: true })
+    profile: Profile;
 }
