@@ -7,6 +7,8 @@ import { Post } from './entities/post.entity';
 import { Comment } from '../comment/entities/comment.entity';
 import { ClientProxy } from '@nestjs/microservices';
 import { User } from '../user/entities/user.entity';
+import { Photo } from '../photo/entities/photo.entity';
+import { basename } from 'path';
 
 @Injectable()
 export class PostService {
@@ -14,11 +16,16 @@ export class PostService {
  constructor(
         @InjectRepository(Post)
         private postRepository: Repository<Post>,
+        @InjectRepository(Photo)
+        private photoRepository: Repository<Photo>,
         @InjectRepository(User)
         private userRepository: Repository<User>,
         @Inject('APP_SERVICE') private readonly client: ClientProxy,
+        
+
     ) {}
-  
+
+  private readonly allowedImageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'];
   async create(createPostDto: CreatePostDto, userId: number) {
 
         const user = await this.userRepository.findOne({ where: { id: userId } });
@@ -37,6 +44,28 @@ export class PostService {
         const post = await this.postRepository.save(postData);
         post.userId = user.id; 
         
+        //handle photos if provided
+        if (createPostDto.mediaUrl && createPostDto.mediaUrl.length > 0) {
+            const photos = createPostDto.mediaUrl.map(url => {
+                const pathname = new URL(url).pathname; // extract /path/to/file.jpg
+                const baseName = basename(pathname);     
+                let isType = 0; // 0: image, 1: video 
+                if (!this.isImageFile(url)) {
+                    isType = 1; // If not an image, treat as video
+                }
+                const photoEntity = this.photoRepository.create({
+                    name: baseName,
+                    url: url,
+                    isType: isType, // 0: image, 1: video
+                    post: post,
+                    user: user,
+                    createdAt: new Date(),
+                });
+                return photoEntity;
+            });
+            await this.photoRepository.save(photos);
+        }
+
         console.log('Post created:', post);
         this.client.send('index_post', {
             index: 'post',
@@ -46,6 +75,9 @@ export class PostService {
         return post;
   }
 
+  isImageFile(url: string): boolean {
+    return /\.(jpe?g|png|gif|bmp|webp)$/i.test(url);
+}
 
   findAll() {
     return this.postRepository.find({

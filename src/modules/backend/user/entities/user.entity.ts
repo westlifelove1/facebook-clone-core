@@ -7,6 +7,7 @@ import { Comment } from "../../comment/entities/comment.entity";
 import { Reaction } from "../../reaction/entities/reaction.entity";
 import { Profile } from '../../profile/entities/profile.entity';
 import { FriendRequest } from '../../friendrequest/entities/friendrequest.entity';
+import { Photo } from "../../photo/entities/photo.entity";
 
 
 @Entity()
@@ -63,4 +64,7 @@ export class User {
 
     @OneToMany(() => FriendRequest, (fr) => fr.receiver)
     receivedFriendRequests: FriendRequest[];
+
+    @OneToMany(() => Photo, photo => photo.user, { cascade: true })
+    photos: Photo[];
 }

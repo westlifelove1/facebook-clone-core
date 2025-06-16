@@ -44,7 +44,7 @@ export class Post {
 
     @OneToMany(() => Reaction, reaction => reaction.post)
     reactions: Reaction[];
-
+    
     @OneToMany(() => Photo, photo => photo.post, { cascade: true })
     photos: Photo[];
 

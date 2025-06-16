@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 
 import { Post } from 'src/modules/backend/post/entities/post.entity';
+import { User } from '../../user/entities/user.entity';
 
 @Entity('photo')
 export class Photo {
@@ -30,4 +31,6 @@ export class Photo {
     @ManyToOne(() => Post, post => post.photos)
     post: Post;
         
+    @ManyToOne(() => User, user => user.photos)
+    user: User;
 } 
