@@ -13,6 +13,9 @@ export class Profile {
   @Column({ nullable: true })
   profilePic: string;
 
+  @Column({ nullable: true })
+  coverPic: string;
+
   @Column()
   displayName: string;
 
@@ -21,6 +24,12 @@ export class Profile {
 
   @Column({ type: 'date', nullable: true })
   birthday: Date;
+
+  @Column({ nullable: true })
+  birthPlace: string; 
+
+  @Column({ nullable: true })
+  workingPlace: string;
 
   @Column({ type: 'text', nullable: true })
   bio: string;
