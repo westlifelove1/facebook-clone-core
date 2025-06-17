@@ -1,4 +1,4 @@
-import { Module, Post } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { PhotoService } from './photo.service';
 import { PhotoController } from './photo.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -9,6 +9,7 @@ import { ClientsModule } from '@nestjs/microservices';
 import configuration from 'src/config/configuration';
 import { ConfigService } from '@nestjs/config';
 import { rabbitMqConfig } from 'src/service/rabbitMQ/rabbitmq.config';
+import { Post } from '../post/entities/post.entity';
 
 @Module({
   imports: [

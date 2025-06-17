@@ -31,6 +31,6 @@ export class Photo {
     @ManyToOne(() => Post, post => post.photos)
     post: Post;
         
-    @ManyToOne(() => User, user => user.photos)
+    @ManyToOne(() => User, user => user.photos, { onDelete: 'CASCADE' })
     user: User;
 } 

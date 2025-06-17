@@ -14,9 +14,10 @@ import { PostMicroservice } from './post.microservice';
 import { PostSearchService } from './post-search.service';
 import { User } from '../user/entities/user.entity';
 import { Photo } from '../photo/entities/photo.entity';
+import { Notify } from '../notify/entities/notify.entity';
 @Module({
   imports: [
-        TypeOrmModule.forFeature([Post, User, Photo]),
+        TypeOrmModule.forFeature([Post, User, Photo, Notify]),
         JwtModule.register({
             secret: configuration().jwt.secret,
             signOptions: { expiresIn: configuration().jwt.expires || '1h'},

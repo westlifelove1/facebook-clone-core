@@ -1,18 +1,35 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Param, Delete, ParseIntPipe, Query, Request, UseGuards, BadRequestException } from '@nestjs/common';
 import { PhotoService } from './photo.service';
-import { CreatePhotoDto } from './dto/create-photo.dto';
-import { UpdatePhotoDto } from './dto/update-photo.dto';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { AuthGuard } from '../../../guards/auth/auth.guard';
 
-@Controller('photo')
+@ApiTags('Backend / Photo')
+@ApiBearerAuth('access_token')
+@Controller('')
+@UseGuards(AuthGuard)
 export class PhotoController {
-  constructor(private readonly photoService: PhotoService) {}
+   constructor(private readonly photoService: PhotoService
+   ){}
 
-  @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.photoService.findOne(+id);
+  @Get('user')
+  findByUserId(
+    @Request() req,
+    @Query('user_id') user_id: string,
+    @Query('page', ParseIntPipe) page: number,
+    @Query('limit', ParseIntPipe) limit: number
+  ) {
+    let userId = parseInt(user_id);
+    if (isNaN(userId) || userId <= 0) {
+      userId = Number(req.user?.sub);
+      if (!userId || isNaN(userId)) {
+          throw new BadRequestException('ID nguoi dung khong hop le');
+      }
+    }
+    console.log('userId', userId, 'page', page, 'limit', limit);
+    return this.photoService.findByUserId(+userId, page, limit);
   }
 
-  @Get('/post/:postId')
+  @Get('post/:postId')
   findByPostId(@Param('postId', ParseIntPipe) postId: number) {
     return this.photoService.findByPostId(+postId);
   }

@@ -9,6 +9,7 @@ import { CommentModule } from 'src/modules/backend/comment/comment.module';
 import { PostModule } from 'src/modules/backend/post/post.module';
 import { FriendrequestModule } from  'src/modules/backend/friendrequest/friendrequest.module';
 import { PhotoModule } from 'src/modules/backend/photo/photo.module';
+import { NotifyModule } from 'src/modules/backend/notify/notify.module';
 
 export const backendRoutes: Routes = [
     { path: 'backend/user', module: UserModule },
@@ -21,6 +22,7 @@ export const backendRoutes: Routes = [
     { path: 'backend/post', module: PostModule },
     { path: 'backend/friendrequest', module: FriendrequestModule },
     { path: 'backend/photo', module: PhotoModule },
+    { path: 'backend/notify', module: NotifyModule },
 ];
 
 export const backendModules = [
@@ -34,4 +36,5 @@ export const backendModules = [
     PostModule,
     FriendrequestModule,
     PhotoModule,
+    NotifyModule,
 ];
