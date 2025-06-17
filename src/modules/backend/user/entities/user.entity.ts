@@ -9,6 +9,7 @@ import { Profile } from '../../profile/entities/profile.entity';
 import { FriendRequest } from '../../friendrequest/entities/friendrequest.entity';
 import { Page } from '../../pages/entities/page.entity';
 import { Photo } from "../../photo/entities/photo.entity";
+import { Notify } from "../../notify/entities/notify.entity";
 
 
 @Entity()
@@ -71,4 +72,9 @@ export class User {
 
     @OneToMany(() => Photo, photo => photo.user, { cascade: true })
     photos: Photo[];
+
+    @OneToMany(() => Notify, (notify) => notify.user)
+    notifications: Notify[];
+
+
 }

@@ -11,6 +11,7 @@ import { User } from 'src/modules/backend/user/entities/user.entity';
 import { Comment } from 'src/modules/backend/comment/entities/comment.entity';
 import { Reaction } from 'src/modules/backend/reaction/entities/reaction.entity';
 import { Photo } from '../../photo/entities/photo.entity';
+import { Notify } from '../../notify/entities/notify.entity';
 
 @Entity('post')
 export class Post {
@@ -47,6 +48,10 @@ export class Post {
     
     @OneToMany(() => Photo, photo => photo.post, { cascade: true })
     photos: Photo[];
+
+    @OneToMany(() => Notify, (notify) => notify.user)
+    notifications: Notify[];
+
 
     userId: number;
 
