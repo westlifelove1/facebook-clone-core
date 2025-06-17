@@ -20,4 +20,13 @@ export class CreateProfileDto {
 
   @IsOptional()
   bio?: string;
+
+   @IsOptional()
+  birthPlace: string; 
+
+  @IsOptional()
+  workingPlace: string;
+
+  @IsOptional()
+  coverPic: string;
 }
