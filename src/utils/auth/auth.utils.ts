@@ -1,6 +1,5 @@
 import { JwtService } from '@nestjs/jwt';
 import { generateTokens } from '../token/jwt.utils';
-import { Auth } from '../../modules/backend/auth/entities/auth.entity';
 import { Repository } from 'typeorm';
 import { User } from '../../modules/backend/user/entities/user.entity';
 import * as bcrypt from 'bcrypt';
@@ -21,14 +20,10 @@ export interface CreateUserData {
     email: string;
     fullname: string;
     password?: string;
-    avatar?: string;
+    profilepic?: string;
 }
 
-export const generateAuthResponse = (
-    jwtService: JwtService,
-    auth: Auth,
-): AuthResponse => {
-    const user = auth.user;
+export const generateAuthResponse = ( jwtService: JwtService, user: User): AuthResponse => {
    
     const payload = {
         sub: user.id,
@@ -41,48 +36,24 @@ export const generateAuthResponse = (
     return {
         ...tokens,
         user: {
-            email: auth.email,
-            fullname: auth.fullname,
+            email: user.email,
+            fullname: user.fullname,
             id: user.id,
         }
     };
 };
 
-export const createNewUser = async (
-    authRepository: Repository<Auth>,
+export const createNewUser = async (   
     userRepository: Repository<User>,
     data: CreateUserData,
-): Promise<Auth> => {
+): Promise<User> => {
     // Hash password if provided, otherwise generate random password
     const password = data.password || generateRandomPassword();
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create new auth
-    const auth = authRepository.create({
-        email: data.email,
-        fullname: data.fullname,
-        password: hashedPassword,
-    });
+    const user = userRepository.create({...data, password: hashedPassword,});
+    const userNew = await userRepository.save(user);
 
-    // Save to database
-    const authNew = await authRepository.save(auth);
-
-    if (authNew) {
-        // Create user row linked to auth
-        const user = userRepository.create({
-            fullname: data.fullname,
-            email: data.email,
-            phone: '',
-            avatar: data.avatar || '',
-            auth: authNew,
-        });
-        const userNew = await userRepository.save(user);
-
-        return {
-            ...authNew,
-            user: userNew,
-        };
-    }
-    return authNew;
+    return userNew;
 }; 

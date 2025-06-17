@@ -1,9 +1,10 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { Repository, Like } from 'typeorm';
+import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
@@ -11,6 +12,44 @@ export class UserService {
         @InjectRepository(User)
         private userRepository: Repository<User>,
     ) { }
+
+     async register(createuserDto: CreateUserDto, req: Request) {
+        // Check if email already exists
+        var email= createuserDto.email;
+        const existingUser = await this.userRepository.findOne({ where: { email } });
+
+        if (existingUser) {
+            throw new HttpException('Email already exists', HttpStatus.BAD_REQUEST);
+        }
+
+        // Hash password if provided
+        const salt = await bcrypt.genSalt();
+        const hashedPassword = await bcrypt.hash(createuserDto.password, salt);
+        createuserDto.password = hashedPassword;
+
+        const user = this.userRepository.create({...createuserDto, password: hashedPassword,});
+        const userNew = await this.userRepository.save(user);
+
+        return {
+            message: 'Registration successful',
+            data: {
+                id: userNew.id,
+                email: userNew.email,
+                fullname: userNew.fullname,
+                phone: userNew.phone,
+                createdAt: userNew.createdAt,
+            }
+        };
+    }
+
+    async findOne(id: number): Promise<any> {
+        const user = await this.userRepository.findOne({ where: { id: Number(id) } });
+        if (!user) {
+            throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+        }
+        return user;
+    }
+
 
     async findAll(q?: string, page: number = 1, limit: number = 10): Promise<any> {
         const take = limit;
@@ -33,54 +72,7 @@ export class UserService {
         };
     }
 
-    async findOne(id: number): Promise<any> {
-        const user = await this.userRepository.findOne({ where: { id: Number(id) } });
-        if (!user) {
-            throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-        }
-
-        return {
-            id: user.id,
-            fullname: user.fullname,
-            phone: user.phone,
-            avatar: user.avatar,
-            email: user.email,
-        };
-    }
-
-    async updateMe(id: number, updateUserDto: UpdateUserDto): Promise<any> {
-        const user = await this.userRepository.findOne({ where: { id } });
-        if (!user) {
-            throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-        }
-
-        // Chỉ cho phép update các trường này
-        const allowedFields = ['fullname', 'phone', 'avatar'];
-        const updateData: Partial<User> = {};
-        for (const key of allowedFields) {
-            if (key in updateUserDto) {
-                updateData[key] = updateUserDto[key];
-            }
-        }
-
-        // Nếu client truyền trường không hợp lệ thì báo lỗi
-        const extraFields = Object.keys(updateUserDto).filter(key => !allowedFields.includes(key));
-        if (extraFields.length > 0) {
-            throw new HttpException(
-                `You are not allowed to update fields: ${extraFields.join(', ')}`,
-                HttpStatus.BAD_REQUEST
-            );
-        }
-
-        const updatedUser = await this.userRepository.save({ ...user, ...updateData });
-        if (!updatedUser) {
-            throw new HttpException('Failed to update user', HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        return {
-            message: 'User updated successfully',
-        };
-    }
-
+   
     async update(id: number, updateUserDto: UpdateUserDto): Promise<any> {
         const user = await this.userRepository.findOne({ where: { id } });
         if (!user) {

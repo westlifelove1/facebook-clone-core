@@ -2,9 +2,10 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { FriendrequestService } from './friendrequest.service';
 import { CreateFriendrequestDto } from './dto/create-friendrequest.dto';
 import { UpdateFriendrequestDto } from './dto/update-friendrequest.dto';
-import { ApiTags, ApiOperation, ApiParam, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam, ApiBody } from '@nestjs/swagger';
 
 @ApiTags('Backend/friendrequest')
+@ApiBearerAuth('access_token') 
 @Controller('friendrequest')
 export class FriendrequestController {
   constructor(private readonly friendrequestService: FriendrequestService) {}

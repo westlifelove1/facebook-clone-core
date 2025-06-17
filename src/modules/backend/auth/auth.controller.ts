@@ -1,12 +1,11 @@
 import { Controller, Post, Body, Headers, UnauthorizedException, Req } from '@nestjs/common';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
-import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { Public } from 'src/decorators/public.decorator';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiHeader } from '@nestjs/swagger';
-import { AuthResponseDto, RegisterResponseDto, RefreshTokenResponseDto } from './dto/auth-response.dto';
+import { AuthResponseDto, RefreshTokenResponseDto } from './dto/auth-response.dto';
 
 @ApiTags('Backend / Auth')
 @Controller()
@@ -22,7 +21,7 @@ export class AuthController {
         examples: {
             example1: {
                 value: {
-                    email: 'emailtesting@gmail.com',
+                    email: 'email@careerviet.vn',
                     password: '123456',
                 }
             }
@@ -81,30 +80,6 @@ export class AuthController {
     })
     async loginSupabase(@Body('token') token: string, @Req() req: Request) {
         return this.authService.loginSupabase(token, req);
-    }
-    
-    @Post('register')
-    @ApiOperation({ summary: 'Đăng ký tài khoản mới' })
-    @ApiBody({
-        type: RegisterDto,
-        description: 'Thông tin đăng ký',
-        examples: {
-            example1: {
-                value: {
-                    email: 'emailtesting@gmail.com',
-                    password: '123456',
-                    fullname: 'User Testing',
-                }
-            }
-        }
-    })
-    @ApiResponse({
-        status: 201,
-        description: 'Đăng ký thành công',
-        type: RegisterResponseDto
-    })
-    async register(@Body() registerDto: RegisterDto, @Req() req: Request) {
-        return this.authService.register(registerDto, req);
     }
 
     @Post('refresh-token')

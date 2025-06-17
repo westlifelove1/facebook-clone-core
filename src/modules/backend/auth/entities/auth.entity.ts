@@ -1,9 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn } from 'typeorm';
-import { User } from '../../user/entities/user.entity';
 
-@Entity('auth')
 export class Auth {
-    @PrimaryGeneratedColumn()
+   /*  @PrimaryGeneratedColumn()
     id: number;
 
     @Column({ unique: true })
@@ -16,5 +13,5 @@ export class Auth {
     password: string;
 
     @OneToOne(() => User, (user) => user.auth)
-    user: User;
+    user: User; */
 }

@@ -1,9 +1,8 @@
 import { Injectable, BadRequestException, HttpStatus, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Auth } from './entities/auth.entity';
+/* import { Auth } from './entities/auth.entity'; */
 import * as bcrypt from 'bcrypt';
-import { RegisterDto } from './dto/register.dto';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
@@ -16,13 +15,12 @@ import { generateAuthResponse, createNewUser } from 'src/utils/auth/auth.utils';
 import { LogsService } from 'src/modules/backend/logs/logs.service';
 import { LogAction } from 'src/modules/backend/logs/entities/log.entity';
 import { Request } from 'express';
-import { getDeviceInfo } from 'src/utils/device/device.utils';
 
 @Injectable()
 export class AuthService {
     constructor(
-        @InjectRepository(Auth)
-        private authRepository: Repository<Auth>,
+       /*  @InjectRepository(Auth)
+        private authRepository: Repository<Auth>, */
         private jwtService: JwtService,
         @InjectRepository(User)
         private userRepository: Repository<User>,
@@ -31,65 +29,15 @@ export class AuthService {
 
     async login(loginDto: LoginDto, req: Request) {
         const { email, password } = loginDto;
-        const auth = await this.authRepository.findOne({
-            where: { email },
-            relations: ['user']
-        });
-        if (!auth) {
+        const user = await this.userRepository.findOne({ where: { email } });
+        if (!user) {
             throw new HttpException('Invalid email or password', HttpStatus.BAD_REQUEST);
         }
-        const isMatch = await bcrypt.compare(password, auth.password);
+        const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             throw new HttpException('Invalid email or password', HttpStatus.BAD_REQUEST);
         }
-
-        const deviceInfo = getDeviceInfo(req);
-        await this.logsService.createAuthLog({
-            name: `User ${auth.fullname} logged in`,
-            action: LogAction.LOGIN,
-            ...deviceInfo,
-            user_id: auth.user.id.toString(),
-            other: {
-                email: auth.email
-            }
-        });
-        return generateAuthResponse(this.jwtService, auth);
-    }
-
-    async register(registerDto: RegisterDto, req: Request) {
-        const { email, fullname, password } = registerDto;
-
-        // Check if email already exists
-        const existingAuth = await this.authRepository.findOne({ where: { email } });
-
-        if (existingAuth) {
-            throw new HttpException('Email already exists', HttpStatus.BAD_REQUEST);
-        }
-
-        const auth = await createNewUser(this.authRepository, this.userRepository, {
-            email,
-            fullname,
-            password
-        });
-
-        const deviceInfo = getDeviceInfo(req);
-        await this.logsService.createAuthLog({
-            name: `New user registered: ${fullname}`,
-            action: LogAction.REGISTER,
-            ...deviceInfo,
-            other: {
-                userId: auth.user.id,
-                email: auth.email
-            }
-        });
-
-        return {
-            message: 'Registration successful',
-            data: {
-                id: auth.id,
-                email: auth.email,
-            }
-        };
+        return generateAuthResponse(this.jwtService, user);
     }
 
     async refreshToken(refreshTokenDto: RefreshTokenDto, req: Request) {
@@ -105,11 +53,9 @@ export class AuthService {
         const payload = { sub: decoded.sub, email: decoded.email };
         const tokens = generateTokens(this.jwtService, payload);
 
-        const deviceInfo = getDeviceInfo(req);
         await this.logsService.createAuthLog({
             name: `Token refreshed for user ${decoded.email}`,
             action: LogAction.REFRESH_TOKEN,
-            ...deviceInfo,
             other: {
                 userId: decoded.sub,
                 email: decoded.email
@@ -130,11 +76,9 @@ export class AuthService {
         }
         try {
             const decoded = await adminGG.auth().verifyIdToken(token);
-            const deviceInfo = getDeviceInfo(req);
             await this.logsService.createAuthLog({
                 name: `Google login attempt for ${decoded.email}`,
                 action: LogAction.LOGIN,
-                ...deviceInfo,
                 other: {
                     email: decoded.email,
                     provider: 'google'
@@ -159,70 +103,61 @@ export class AuthService {
             const data = res.data as {
                 email: string;
                 name: string;
-                picture: string;
+                profilepic: string;
                 id: string;
             };
 
-            const { email, name: fullname, picture: avatar, id: googleId } = data;
+            const { email, name: fullname, profilepic: profilepic, id: googleId } = data;
 
             if (!email || !googleId) {
                 throw new HttpException('Google không trả thông tin đầy đủ', HttpStatus.UNAUTHORIZED);
             }
 
-            const deviceInfo = getDeviceInfo(req);
-
             // Tìm user hoặc tạo mới
-            const existingAuth = await this.authRepository.findOne({
-                where: { email },
-                relations: ['user']
-            });
+            const existingUser = await this.userRepository.findOne({ where: { email }  });
 
-            if (existingAuth) {
+            //user exists
+            if (existingUser) {
                 await this.logsService.createAuthLog({
                     name: `Google login for existing user ${fullname}`,
                     action: LogAction.LOGIN,
-                    ...deviceInfo,
-                    user_id: existingAuth.user.id.toString(),
+                    user_id: existingUser.id.toString(),
                     other: {
-                        email: existingAuth.email,
+                        email: existingUser.email,
                         provider: 'google'
                     }
                 });
-                return generateAuthResponse(this.jwtService, existingAuth);
+                return generateAuthResponse(this.jwtService, existingUser);
             }
 
             // Create new user
-            const authNew = await createNewUser(this.authRepository, this.userRepository, {
-                email,
-                fullname,
-                avatar
-            });
+            const newUser = await createNewUser( this.userRepository, { email, fullname, profilepic });
 
-            if (authNew) {
+            if (newUser) {
                 await this.logsService.createAuthLog({
                     name: `New user registered via Google: ${fullname}`,
                     action: LogAction.REGISTER,
-                    ...deviceInfo,
-                    user_id: authNew.user.id.toString(),
+                    user_id: newUser.id.toString(),
                     other: {
-                        email: authNew.email,
+                        email: newUser.email,
                         provider: 'google'
                     }
                 });
 
                 const payload = {
-                    sub: authNew.user.id,
-                    email: authNew.email,
-                    fullname: authNew.fullname,
-                    roles: ''
+                    sub: newUser.id,
+                    email: newUser.email,
+                    fullname: newUser.fullname,
+                    googleId: googleId
                 };
                 const tokens = generateTokens(this.jwtService, payload);
                 return {
                     ...tokens,
                     user: {
-                        email: authNew.email,
-                        fullname: authNew.fullname,
-                        avatar: authNew.user.avatar
+                        email: newUser.email,
+                        fullname: newUser.fullname,
+                        id: newUser.id,
+                        profilepic: newUser.profilepic || '',
                     }
                 };
             }

@@ -2,10 +2,11 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Req, UseGuards, BadR
 import { PagesService } from './pages.service';
 import { CreatePageDto } from './dto/create-page.dto';
 import { UpdatePageDto } from './dto/update-page.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiTags,ApiBearerAuth } from '@nestjs/swagger';
 import { AuthGuard } from '../../../guards/auth/auth.guard';
 
 @ApiTags('Backend/Pages')
+@ApiBearerAuth('access_token') 
 @Controller('pages')
 export class PagesController {
   constructor(private readonly pagesService: PagesService) {}

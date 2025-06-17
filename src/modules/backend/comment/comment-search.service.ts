@@ -389,7 +389,7 @@ export class CommentSearchService implements OnApplicationBootstrap {
                         author: comment.author ? {
                             id: comment.author.id,
                             fullname: comment.author.fullname,
-                            avatar: comment.author.avatar
+                            avatar: comment.author.profilepic
                         } : null,
                         parentComment: comment.parentComment ? {
                             id: comment.parentComment.id,

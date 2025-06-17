@@ -1,59 +1,52 @@
-import { Controller, Get, Body, Param, Query, Put, Request, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, Put, Request, Req } from '@nestjs/common';
+import { ApiTags, ApiQuery, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody, ApiParam } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { User } from './entities/user.entity';
-import { UpdateUserDto, UpdateMeUserDto } from './dto/update-user.dto';
-import { ApiTags, ApiQuery, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody, ApiParam } from '@nestjs/swagger';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { CreateUserDto } from './dto/create-user.dto';
+import { ResponseUserDto } from './dto/response-user.dto';
+import { Public }  from 'src/decorators/public.decorator'; 
+
 
 @ApiTags('Backend / User')
-@ApiBearerAuth('access_token') 
 @Controller()
 export class UserController {
     constructor(private readonly userService: UserService) {}
 
-    @Put('me')
-    @ApiOperation({ summary: 'Cập nhật thông tin user hiện tại' })
+    @Public()
+    @Post('register')
+    @ApiOperation({ summary: 'Tạo tài khoản mới' })
     @ApiBody({
-        type: UpdateMeUserDto,
-        description: 'Chỉ được phép cập nhật fullname, phone, avatar. Email không được phép thay đổi.',
+        type: CreateUserDto,
+        description: 'Thông tin đăng ký',
         examples: {
             example1: {
                 value: {
-                    fullname: 'Nguyen Van A',
+                    email: 'testemail@gmail.com',
+                    password: '123456',
+                    fullname: 'Testing Name',
                     phone: '0123456789',
-                    avatar: 'https://example.com/avatar.jpg'
+                    profilepic: 'https://example.com/avatar.jpg',
+                    coverpic: 'https://example.com/cover.jpg',
+                    bio: 'This is my  bio',
+                    birthplace: 'HCM, Vietnam',
+                    workingPlace: 'HCM, Vietnam',
                 }
             }
         }
     })
-    @ApiResponse({ 
-        status: 200, 
-        description: 'Cập nhật user thành công', 
-        schema: {
-            example: { 
-                message: 'User updated successfully',
-                data: {
-                    id: 1,
-                    fullname: 'Nguyen Van A',
-                    phone: '0123456789',
-                    avatar: 'https://example.com/avatar.jpg',
-                    email: 'user@example.com',
-                    createdAt: '2024-03-20T10:00:00Z',
-                    updatedAt: '2024-03-20T10:00:00Z'
-                }
-            }
-        }
+    @ApiResponse({
+        status: 201,
+        description: 'Đăng ký thành công',
+        type: ResponseUserDto
     })
-    @ApiResponse({ status: 400, description: 'Invalid user id in token' })
-    updateMe(@Request() req, @Body() updateUserDto: UpdateMeUserDto) {
-        const userId = Number(req.user?.sub);
-        if (!userId || isNaN(userId)) {
-            throw new BadRequestException('Invalid user id in token');
-        }
-        return this.userService.updateMe(userId, updateUserDto);
+    async register(@Body() createuserDto: CreateUserDto, @Req() req: Request) {
+        return this.userService.register(createuserDto, req);
     }
 
     @Put(':id')
     @ApiOperation({ summary: 'Cập nhật thông tin user' })
+    @ApiBearerAuth('access_token') 
     @ApiParam({ 
         name: 'id', 
         type: 'number', 
@@ -66,9 +59,13 @@ export class UserController {
         examples: {
             example1: {
                 value: {
-                    fullname: 'Nguyen Van A',
+                    fullname: 'My fullname',
                     phone: '0123456789',
-                    avatar: 'https://example.com/avatar.jpg',
+                    profilepic: 'https://example.com/avatar.jpg',
+                    coverpic: 'https://example.com/cover.jpg',
+                    bio: 'This is my new bio',
+                    birthplace: 'HCM, Vietnam',
+                    workingPlace: 'HCM, Vietnam',
                     isActive: true,
                 }
             }
@@ -95,34 +92,8 @@ export class UserController {
         return this.userService.update(id, updateUserDto);
     }
 
-    @Get('me')
-    @ApiOperation({ summary: 'Lấy thông tin user hiện tại' })
-    @ApiResponse({ 
-        status: 200, 
-        description: 'Thông tin user hiện tại',
-        schema: {
-            example: {
-                id: 1,
-                fullname: 'Nguyen Van A',
-                phone: '0123456789',
-                avatar: 'https://example.com/avatar.jpg',
-                email: 'user@example.com',
-                status: 'active',
-                createdAt: '2024-03-20T10:00:00Z',
-                updatedAt: '2024-03-20T10:00:00Z'
-            }
-        }
-    })
-    @ApiResponse({ status: 400, description: 'Invalid user id in token' })
-    findMe(@Request() req) {
-        const userId = Number(req.user?.sub);
-        if (!userId || isNaN(userId)) {
-            throw new BadRequestException('Invalid user id in token');
-        }
-        return this.userService.findOne(userId);
-    }
-
     @Get(':id')
+    @ApiBearerAuth('access_token') 
     @ApiOperation({ summary: 'Lấy thông tin user theo ID' })
     @ApiParam({ 
         name: 'id', 
@@ -138,7 +109,11 @@ export class UserController {
                 id: 1,
                 fullname: 'Nguyen Van A',
                 phone: '0123456789',
-                avatar: 'https://example.com/avatar.jpg',
+                profilepic: 'https://example.com/avatar.jpg',
+                coverpic: 'https://example.com/cover.jpg',
+                bio: 'This is my bio',
+                birthplace: 'HCM, Vietnam',
+                workingPlace: 'HCM, Vietnam',
                 email: 'user@example.com',
                 status: 'active',
                 createdAt: '2024-03-20T10:00:00Z',
@@ -152,6 +127,7 @@ export class UserController {
     }
 
     @Get()
+    @ApiBearerAuth('access_token') 
     @ApiOperation({ summary: 'Tìm kiếm user' })
     @ApiResponse({ 
         status: 200, 
@@ -160,10 +136,14 @@ export class UserController {
             example: {
                 items: [
                     {
-                        id: 1,
+                       id: 1,
                         fullname: 'Nguyen Van A',
                         phone: '0123456789',
-                        avatar: 'https://example.com/avatar.jpg',
+                        profilepic: 'https://example.com/avatar.jpg',
+                        coverpic: 'https://example.com/cover.jpg',
+                        bio: 'This is my bio',
+                        birthplace: 'HCM, Vietnam',
+                        workingPlace: 'HCM, Vietnam',
                         email: 'user@example.com',
                         status: 'active',
                         createdAt: '2024-03-20T10:00:00Z',

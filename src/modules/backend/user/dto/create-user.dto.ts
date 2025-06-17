@@ -1,12 +1,4 @@
-import { 
-    IsEmail, 
-    IsNotEmpty, 
-    IsString, 
-    IsOptional, 
-    MaxLength, 
-    Matches,
-    IsNumber
-} from "class-validator";
+import { IsEmail, IsNotEmpty, IsString, IsOptional, MaxLength, Matches, MinLength} from "class-validator";
 
 export class CreateUserDto {
     @IsNotEmpty()
@@ -21,9 +13,27 @@ export class CreateUserDto {
     @IsString()
     @MaxLength(10, { message: 'Phone must be at most 10 digits' })
     @Matches(/^\d*$/, { message: 'Phone must contain only digits' })
-    phone: string;
+    phone?: string;
+
+    @IsNotEmpty()
+    @IsString()
+    @MinLength(6, { message: 'Password must be at least 6 characters long' })
+    password: string;
+
+    @IsString()
+    @IsOptional()
+    profilepic?: string;
 
     @IsOptional()
     @IsString()
-    avatar: string;
-}
+    coverpic?: string;
+
+    @IsOptional()
+    bio?: string;
+
+    @IsOptional()
+    birthplace?: string;
+
+    @IsOptional()
+    workingPlace?: string;
+} 
