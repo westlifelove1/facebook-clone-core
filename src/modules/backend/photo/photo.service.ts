@@ -1,6 +1,4 @@
 import { Inject, Injectable, Post } from '@nestjs/common';
-import { CreatePhotoDto } from './dto/create-photo.dto';
-import { UpdatePhotoDto } from './dto/update-photo.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ClientProxy } from '@nestjs/microservices';
 import { Repository } from 'typeorm';
@@ -11,8 +9,17 @@ export class PhotoService {
   
   constructor(
     @InjectRepository(Photo) private photoRepository: Repository<Photo>,
-    @Inject('APP_SERVICE') private client: ClientProxy, 
+
   ) {}
+
+   findByUserId(userId: number, page: number, limit: number) {
+    return this.photoRepository.find({
+      where: { user: { id: userId } },  
+      relations: ['post'],
+      skip: page ? (page - 1) * limit : 0,
+      take: limit ? limit : 10,
+    });
+  } 
 
   findByPostId(postId: number) {
     return this.photoRepository.find({
