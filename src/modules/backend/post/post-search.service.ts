@@ -63,18 +63,22 @@ export class PostSearchService implements OnApplicationBootstrap {
         const isNumber = q && /^\d+$/.test(q);  
         console.log("userId:", userId); 
 
-        const query: any = {
-            bool: {
-                must: [
-                    {
-                        term: {
+       const query: any = {
+                    bool: {
+                        must: [
+                        {
+                            term: {
                             isType: 0
+                            }
+                        },
+                        {
+                            term: {
+                            userId: userId
+                            }
                         }
+                        ]
                     }
-                ]
-            }
         };
-
         // Add search term if provided
         if (q) {
             query.bool.should = [

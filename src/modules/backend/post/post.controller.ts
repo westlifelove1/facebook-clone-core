@@ -28,13 +28,20 @@ export class PostController {
   newsFeed(
           @Request() req,
           @Query('q') q?: string,
+          @Query('user_id') user_id?: number,
           @Query('page') page?: number,
-          @Query('limits') limit?: number
+          @Query('limit') limit?: number
         ) {
-        const userId = Number(req.user?.sub);
-        if (!userId || isNaN(userId)) {
-            throw new BadRequestException('ID nguoi dung khong hop le');
-        }
+          let userId: number;
+          if (typeof user_id !== 'undefined' && user_id < 0) {
+            userId = Number(user_id);
+          } else {
+            userId = Number(req.user?.sub);
+            if (!userId || isNaN(userId)) {
+                throw new BadRequestException('ID nguoi dung khong hop le');
+            }
+          }
+       
     return this.postSearchService.searchPosts(userId, q, page, limit);
   }
 
