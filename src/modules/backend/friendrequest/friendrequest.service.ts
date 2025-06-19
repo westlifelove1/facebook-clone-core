@@ -1,8 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreateFriendrequestDto } from './dto/create-friendrequest.dto';
-import { UpdateFriendrequestDto } from './dto/update-friendrequest.dto';
 import { FriendRequest } from './entities/friendrequest.entity';
 import { User } from  '../user/entities/user.entity';
 
@@ -17,23 +15,7 @@ export class FriendrequestService {
     private userRepo: Repository<User>,
   ) {}
 
-  create(createFriendrequestDto: CreateFriendrequestDto) {
-    return 'This action adds a new friendrequest';
-  }
-
-  findAll() {
-    return `This action returns all friendrequest`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} friendrequest`;
-  }
-
-  update(id: number, updateFriendrequestDto: UpdateFriendrequestDto) {
-    return `This action updates a #${id} friendrequest`;
-  }
-
-   async sendRequest(senderId: number, receiverId: number) {
+    async sendRequest(senderId: number, receiverId: number) {
     const sender = await this.userRepo.findOneBy({ id: senderId });
     const receiver = await this.userRepo.findOneBy({ id: receiverId });
 
@@ -43,11 +25,24 @@ export class FriendrequestService {
     return this.friendRequestRepo.save(request);
   }
 
-  async respondRequest(id: number, status: 'accept' | 'reject') {
-    const request = await this.friendRequestRepo.findOneBy({ id });
-    if (!request) throw new NotFoundException('Request not found');
-    request.status = status;
-    return this.friendRequestRepo.save(request);
+  async respondRequest(senderId: number, receiverId: number, newStatus: 'accept' | 'reject',): Promise<string> {
+    const request = await this.friendRequestRepo.findOne({
+      where: {
+        sender: { id: senderId },
+        receiver: { id: receiverId },
+        status: 'pending',
+      },
+      relations: ['sender', 'receiver'],
+    });
+
+    if (!request) {
+      throw new NotFoundException('Pending friend request not found.');
+    }
+
+    request.status = newStatus;
+    await this.friendRequestRepo.save(request);
+
+    return `Friend request ${newStatus}ed successfully.`;
   }
 
   async getFriendList(userId: number) {
@@ -67,8 +62,21 @@ export class FriendrequestService {
     ];
   }
 
+  async unfriend(userId: number, friendId: number): Promise<string> {
+    const request = await this.friendRequestRepo.findOne({
+      where: [
+        { sender: { id: userId }, receiver: { id: friendId }, status: 'accept' },
+        { sender: { id: friendId }, receiver: { id: userId }, status: 'accept' },
+      ],
+      relations: ['sender', 'receiver'],
+    });
 
-  remove(id: number) {
-    return `This action removes a #${id} friendrequest`;
+    if (!request) {
+      throw new NotFoundException('Friendship not found');
+    }
+
+    await this.friendRequestRepo.remove(request);
+
+    return 'Friend removed successfully';
   }
 }
