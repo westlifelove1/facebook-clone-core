@@ -15,6 +15,7 @@ export class PhotoController {
   findByUserId(
     @Request() req,
     @Query('user_id') user_id: string,
+    @Query('type', ParseIntPipe) type: number,
     @Query('page', ParseIntPipe) page: number,
     @Query('limit', ParseIntPipe) limit: number
   ) {
@@ -25,8 +26,7 @@ export class PhotoController {
           throw new BadRequestException('ID nguoi dung khong hop le');
       }
     }
-    console.log('userId', userId, 'page', page, 'limit', limit);
-    return this.photoService.findByUserId(+userId, page, limit);
+    return this.photoService.findByUserId(+userId, type, page, limit);
   }
 
   @Get('post/:postId')
