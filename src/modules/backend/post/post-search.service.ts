@@ -30,6 +30,7 @@ export class PostSearchService implements OnApplicationBootstrap {
                         createdAt: { type: 'date', format: 'strict_date_optional_time||epoch_millis' },
                         updatedAt: { type: 'date', format: 'strict_date_optional_time||epoch_millis' },
                         user: {
+                            type: "nested",
                             properties: {
                                 id: { type: 'integer' },
                                 fullname: {
