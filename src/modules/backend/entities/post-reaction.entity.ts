@@ -9,7 +9,7 @@ export class PostReaction {
   postId: string;
 
   @Column()
-  type: string; // like, heart, etc.
+  type: string;
 
   @Column()
   count: number;
