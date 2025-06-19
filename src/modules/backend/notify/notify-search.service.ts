@@ -62,16 +62,12 @@ export class NotifySearchService implements OnApplicationBootstrap {
         console.log("userId:", userId); 
 
         const query: any = {
-            bool: {
-                must: [
-                    {
-                        term: {
-                            isType: 0
+                    "term": {
+                        "user.id": {
+                            "value": userId
                         }
                     }
-                ]
-            }
-        };
+                };
 
         // Add search term if provided
         if (q) {
@@ -86,10 +82,10 @@ export class NotifySearchService implements OnApplicationBootstrap {
                 },
                 {
                     nested: {
-                        path: 'user',
+                        path: 'post',
                         query: {
                             match: {
-                                'user.fullname': {
+                                'post.content': {
                                     query: q,
                                     fuzziness: 'auto'
                                 }
@@ -109,7 +105,7 @@ export class NotifySearchService implements OnApplicationBootstrap {
             }
         }
 
-        // console.log('Search query:', JSON.stringify(query));
+        console.log('Search query:', JSON.stringify(query));
 
         const result = await this.searchService.search({
             index: this.indexEs,

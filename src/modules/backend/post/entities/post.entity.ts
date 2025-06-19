@@ -37,6 +37,8 @@ export class Post {
     @UpdateDateColumn()
     updatedAt: Date;
 
+    userId: number;
+
     @ManyToOne(() => User, user => user.posts)
     user: User;
 
@@ -52,8 +54,4 @@ export class Post {
     @OneToMany(() => Notify, (notify) => notify.user)
     notifications: Notify[];
 
-
-    userId: number;
-
-    
 } 

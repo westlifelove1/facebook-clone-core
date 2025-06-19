@@ -25,15 +25,15 @@ export class NotifyService {
     ) {}
 
   async create(createNotifyDto: CreateNotifyDto) {
-        const user = await this.userRepository.findOne({ where: { id: createNotifyDto.userId } });
+        const user = await this.userRepository.findOne({ where: { id: createNotifyDto.userId }, select: ['id', 'fullname', 'email', 'profilepic', 'coverpic']  });
         if (!user) {
             throw new HttpException(`User not found`, HttpStatus.BAD_REQUEST);
         }
-        const post = await this.postRepository.findOne({ where: { id: createNotifyDto.postId } });
+        const post = await this.postRepository.findOne({ where: { id: createNotifyDto.postId }, select: ['id', 'content'] });
         if (!post) {  
             throw new HttpException(`Post not found`, HttpStatus.BAD_REQUEST);
         }
-
+        console.log(post)
         const notifyData = this.notifyRepository.create({
           content: createNotifyDto.content,
           user: { id: user.id } as User,
