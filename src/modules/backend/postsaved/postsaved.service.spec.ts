@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PostSavedService } from './post-saved.service';
+import { PostSavedService } from './postsaved.service';
 
 describe('PostSavedService', () => {
   let service: PostSavedService;

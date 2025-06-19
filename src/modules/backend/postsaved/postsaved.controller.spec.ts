@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PostSavedController } from './post-saved.controller';
-import { PostSavedService } from './post-saved.service';
+import { PostSavedController } from './postsaved.controller';
+import { PostSavedService } from './postsaved.service';
 
 describe('PostSavedController', () => {
   let controller: PostSavedController;

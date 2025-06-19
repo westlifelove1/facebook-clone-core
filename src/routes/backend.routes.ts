@@ -10,6 +10,7 @@ import { PostModule } from 'src/modules/backend/post/post.module';
 import { FriendrequestModule } from  'src/modules/backend/friendrequest/friendrequest.module';
 import { PhotoModule } from 'src/modules/backend/photo/photo.module';
 import { NotifyModule } from 'src/modules/backend/notify/notify.module';
+import { PostSavedModule } from 'src/modules/backend/postsaved/postsaved.module';
 
 export const backendRoutes: Routes = [
     { path: 'backend/user', module: UserModule },
@@ -23,6 +24,7 @@ export const backendRoutes: Routes = [
     { path: 'backend/friendrequest', module: FriendrequestModule },
     { path: 'backend/photo', module: PhotoModule },
     { path: 'backend/notify', module: NotifyModule },
+    { path: 'backend/postsaved', module: PostSavedModule },
 ];
 
 export const backendModules = [
@@ -37,4 +39,5 @@ export const backendModules = [
     FriendrequestModule,
     PhotoModule,
     NotifyModule,
+    PostSavedModule
 ];
