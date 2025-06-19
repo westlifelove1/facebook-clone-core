@@ -30,7 +30,7 @@ export class NotifyService {
         const notifyData = this.notifyRepository.create({
           content: createNotifyDto.content,
           user: { id: user.id } as User,
-          post: {id : createNotifyDto.PostId} as Post,
+          post: {id : createNotifyDto.postId} as Post,
         });
         console.log('Notify data before saving:', notifyData);
         const notify = await this.notifyRepository.create(notifyData);     
