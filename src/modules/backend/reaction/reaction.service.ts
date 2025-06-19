@@ -7,7 +7,6 @@ import { CreateReactionDto } from './dto/create-reaction.dto';
 import { UpdateReactionDto } from './dto/update-reaction.dto';
 import { User } from '../user/entities/user.entity';
 import { Post } from '../post/entities/post.entity';
-import { RedisService } from 'src/service/redis/redis.service';
 import { Redis } from 'ioredis';
 
 
@@ -31,12 +30,16 @@ export class ReactionService {
         return `post:${postId}:reactions`;
       }
 
+      private getReactionHashKey(postId: string): string {
+        return `post:${postId}:reactions`;
+      }
+
     async create(createReactionDto: CreateReactionDto, userId: number): Promise<any> {
         const post = await this.postRepository.findOne({ where: { id: createReactionDto.postId } });
         if (!post) {
             throw new HttpException(`Bai viet khong ton tai`, HttpStatus.BAD_REQUEST);
         }
-        
+
         // Check if user already reacted to this post
         const existingReaction = await this.reactionRepository.findOne({
             where: {
@@ -108,4 +111,19 @@ export class ReactionService {
 
         return reactions;
     }
+
+    async getReactions(postId: string): Promise<Record<string, string>> {
+        const key = this.getReactionHashKey(postId);
+        return await this.redis.hgetall(key);
+    }
+      
+    async getAllPostIds(): Promise<string[]> {
+        const keys = await this.redis.keys('post:*:reactions');
+        return keys.map(k => k.split(':')[1]); // Extract postId
+      }
+    
+      async clearReactions(postId: string) {
+        const key = this.getReactionHashKey(postId);
+        await this.redis.del(key);
+      }
 }

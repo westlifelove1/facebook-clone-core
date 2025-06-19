@@ -47,6 +47,9 @@ import { CustomThrottlerGuard } from './guards/other/custom-throttler.guard';
 
 import { Token } from './modules/backend/token/entities/token.entity';
 import { ClientsModule } from '@nestjs/microservices';
+import { PostReaction } from './modules/backend/entities/post-reaction.entity';
+import { ReactionCronService } from './modules/backend/reaction/reaction-cron.service';
+import { ReactionRepository } from './modules/backend/reaction/reaction.repository';
 
 @Module({
     imports: [
@@ -86,13 +89,14 @@ import { ClientsModule } from '@nestjs/microservices';
         ...frontendModules,
         ...backendModules,
 
-        TypeOrmModule.forFeature([Token]),
+        TypeOrmModule.forFeature([Token,PostReaction]),
         ScheduleModule.forRoot(),
         TypeOrmModule.forRootAsync({
             inject: [ConfigService],
             useFactory: () => {
                 return {
                     ...PostgresDataSource.options,
+                    entities: [PostReaction],
                     autoLoadEntities: true,
                     synchronize: true,
                 }
@@ -125,6 +129,8 @@ import { ClientsModule } from '@nestjs/microservices';
         { provide: APP_GUARD, useClass: RolesGuard }, // check quyền truy cập
         SearchService,
         SupabaseService, // kết nối supabase
+        ReactionCronService,
+        ReactionRepository,
     ]
 })
 export class AppModule implements NestModule {
