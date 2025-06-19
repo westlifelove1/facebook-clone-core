@@ -7,6 +7,7 @@ import { Notify } from './entities/notify.entity';
 import { ClientProxy } from '@nestjs/microservices';
 import { User } from '../user/entities/user.entity';
 import { Post } from '../post/entities/post.entity';
+import { differenceInCalendarISOWeekYears } from 'date-fns';
 
 @Injectable()
 export class NotifyService {
@@ -16,6 +17,8 @@ export class NotifyService {
         private notifyRepository: Repository<Notify>,
         @InjectRepository(User)
         private userRepository: Repository<User>,
+        @InjectRepository(Post)
+        private postRepository: Repository<Post>,
         @Inject('APP_SERVICE') private readonly client: ClientProxy,
         
 
@@ -26,21 +29,27 @@ export class NotifyService {
         if (!user) {
             throw new HttpException(`User not found`, HttpStatus.BAD_REQUEST);
         }
+        const post = await this.postRepository.findOne({ where: { id: createNotifyDto.postId } });
+        if (!post) {  
+            throw new HttpException(`Post not found`, HttpStatus.BAD_REQUEST);
+        }
 
         const notifyData = this.notifyRepository.create({
           content: createNotifyDto.content,
           user: { id: user.id } as User,
-          post: {id : createNotifyDto.PostId} as Post,
+          post: {id : post.id} as Post,
         });
-        console.log('Notify data before saving:', notifyData);
-        const notify = await this.notifyRepository.create(notifyData);     
-        
-        console.log('Notify created:', notify);
+        const notify = await this.notifyRepository.save(notifyData);     
+        const documentData = {
+            ...notify,
+            user: user,
+            post: post,
+        };
         this.client.send('index_notify', {
             index: 'notify',
-            document: notify,
+            document: documentData,
         }).subscribe(); 
-        return notify;
+        return documentData;
   }
 
 

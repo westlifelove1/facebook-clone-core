@@ -8,7 +8,7 @@ export class CreateNotifyDto {
     content: string;
 
     @Column()
-    PostId: number;
+    postId: number;
 
     @Column()
     userId: number;
