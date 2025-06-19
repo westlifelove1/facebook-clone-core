@@ -36,7 +36,7 @@ export class ReactionService {
         if (!post) {
             throw new HttpException(`Bai viet khong ton tai`, HttpStatus.BAD_REQUEST);
         }
-
+        
         // Check if user already reacted to this post
         const existingReaction = await this.reactionRepository.findOne({
             where: {

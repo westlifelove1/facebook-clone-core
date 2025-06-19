@@ -33,9 +33,8 @@ export class NotifyService {
           post: {id : createNotifyDto.PostId} as Post,
         });
         console.log('Notify data before saving:', notifyData);
-        const notify = await this.notifyRepository.save(notifyData);     
+        const notify = await this.notifyRepository.create(notifyData);     
         
-        console.log('Notify saved:', notify);
         console.log('Notify created:', notify);
         this.client.send('index_notify', {
             index: 'notify',
