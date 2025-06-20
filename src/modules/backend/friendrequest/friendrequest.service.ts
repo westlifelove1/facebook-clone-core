@@ -62,6 +62,23 @@ export class FriendrequestService {
     ];
   }
 
+  async getPendingRequests(userId: number) {
+    const received  = await this.friendRequestRepo.find({
+      where: { receiver: { id: userId }, status: 'pending' },
+      relations: ['sender'],
+    });
+
+    const sent  = await this.friendRequestRepo.find({
+      where: { sender: { id: userId }, status: 'pending' },
+      relations: ['receiver'],
+    });
+
+    return {
+      received: received.map(r => ({requestId: r.id, from: r.sender, createdAt: r.createdAt, })),
+      sent: sent.map(r => ({ requestId: r.id, to: r.receiver, createdAt: r.createdAt, })),
+    };
+  }
+
   async unfriend(userId: number, friendId: number): Promise<string> {
     const request = await this.friendRequestRepo.findOne({
       where: [

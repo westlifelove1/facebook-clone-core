@@ -130,7 +130,7 @@ import { ClientsModule } from '@nestjs/microservices';
 export class AppModule implements NestModule {
     constructor() {
         const app = initializeApp({
-            credential: credential.cert('src/keys/firebase-admin-key.json'),
+            credential: credential.cert('src/common/firebase/firebase-admin-key.json'),
         });
         console.log('AppModule constructor');
     }

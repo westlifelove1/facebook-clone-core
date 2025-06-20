@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, HttpStatus, HttpException } from '@nestjs/common';
+import { Injectable, BadRequestException, HttpStatus, HttpException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 /* import { Auth } from './entities/auth.entity'; */
@@ -14,7 +14,7 @@ import * as adminGG from 'firebase-admin';
 import { generateAuthResponse, createNewUser } from 'src/utils/auth/auth.utils';
 import { LogsService } from 'src/modules/backend/logs/logs.service';
 import { LogAction } from 'src/modules/backend/logs/entities/log.entity';
-import { Request } from 'express';
+import * as admin from 'firebase-admin';
 
 @Injectable()
 export class AuthService {
@@ -27,7 +27,7 @@ export class AuthService {
         private logsService: LogsService,
     ) { }
 
-    async login(loginDto: LoginDto, req: Request) {
+    async login(loginDto: LoginDto) {
         const { email, password } = loginDto;
         const user = await this.userRepository.findOne({ where: { email } });
         if (!user) {
@@ -40,7 +40,7 @@ export class AuthService {
         return generateAuthResponse(this.jwtService, user);
     }
 
-    async refreshToken(refreshTokenDto: RefreshTokenDto, req: Request) {
+    async refreshToken(refreshTokenDto: RefreshTokenDto) {
         const { refreshToken } = refreshTokenDto;
         let decoded: any;
         try {
@@ -70,29 +70,81 @@ export class AuthService {
         };
     }
 
-    async loginGG(token: string, req: Request) {
+    async loginWithGoogle(token: string) {
         if (!token) {
             throw new BadRequestException('No token provided');
         }
+         let decodedToken: admin.auth.DecodedIdToken;
+         
         try {
-            const decoded = await adminGG.auth().verifyIdToken(token);
+            const decodedToken = await adminGG.auth().verifyIdToken(token);
             await this.logsService.createAuthLog({
-                name: `Google login attempt for ${decoded.email}`,
+                name: `Google login attempt for ${decodedToken.email}`,
                 action: LogAction.LOGIN,
                 other: {
-                    email: decoded.email,
+                    email: decodedToken.email,
                     provider: 'google'
                 }
             });
-            return {
-                message: 'Token is valid',
+            
+            const email = decodedToken.email;
+            if (!email) {
+                throw new UnauthorizedException('Google account does not have an email');
+            }
+
+             // Kiểm tra user có tồn tại chưa
+             let existingUser = await this.userRepository.findOne({ where: { email } });
+
+            if (existingUser) {
+                await this.logsService.createAuthLog({
+                    name: `Google login for existing user ${existingUser.fullname}`,
+                    action: LogAction.LOGIN,
+                    user_id: existingUser.id.toString(),
+                    other: {
+                        email: existingUser.email,
+                        provider: 'google'
+                    }
+                });
+                return generateAuthResponse(this.jwtService, existingUser);
+            }
+
+             // Create new user
+            const fullname = decodedToken.name;
+            const profilepic = decodedToken.picture;
+            const newUser = await createNewUser( this.userRepository, { email, fullname, profilepic });
+            if (newUser) {
+                await this.logsService.createAuthLog({
+                    name: `New user registered via Google: ${fullname}`,
+                    action: LogAction.REGISTER,
+                    user_id: newUser.id.toString(),
+                    other: {
+                        email: newUser.email,
+                        provider: 'google'
+                    }
+                });
+
+                const payload = {
+                    sub: newUser.id,
+                    email: newUser.email,
+                    fullname: newUser.fullname
+                };
+                const tokens = generateTokens(this.jwtService, payload);
+                return {
+                    ...tokens,
+                    user: {
+                        email: newUser.email,
+                        fullname: newUser.fullname,
+                        id: newUser.id,
+                        profilepic: newUser.profilepic || '',
+                    }
+                };
             };
         } catch (err) {
             throw new BadRequestException('Invalid token');
         }
     }
 
-    async loginSupabase(accessToken: string, req: Request) {
+    /* async loginSupabase(accessToken: string) {
         try {
             const res = await axios.get('https://www.googleapis.com/oauth2/v1/userinfo?alt=json', {
                 headers: {
@@ -165,5 +217,5 @@ export class AuthService {
             console.error('❌ Google token invalid:', error?.response?.data || error.message);
             throw new HttpException('Google token invalid', HttpStatus.UNAUTHORIZED);
         }
-    }
+    } */
 } 

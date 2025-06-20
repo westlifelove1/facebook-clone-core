@@ -36,4 +36,10 @@ export class FriendrequestController {
   getFriends(@Param('userId') userId: number) {
     return this.friendrequestService.getFriendList(userId);
   }
+
+  @Get('pending/:userId')
+  @ApiOperation({ summary: 'Get pending friend request list of a user' })
+  getPendingRequests(@Param('userId') userId: number) {
+    return this.friendrequestService.getPendingRequests(userId);
+  }
 }

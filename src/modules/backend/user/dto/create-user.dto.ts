@@ -5,6 +5,10 @@ export class CreateUserDto {
     @IsString()
     fullname: string;
 
+    @IsOptional()
+    @IsString()
+    displayname: string;
+
     @IsNotEmpty()
     @IsEmail({}, { message: 'Email must be a valid email address' })
     email: string;

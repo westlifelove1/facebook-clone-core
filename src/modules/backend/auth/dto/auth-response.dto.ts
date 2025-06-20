@@ -2,46 +2,46 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class UserResponseDto {
     @ApiProperty({
-        description: 'ID của người dùng',
+        description: 'User Id',
         example: 'user_id'
     })
     id: string;
 
     @ApiProperty({
-        description: 'Email của người dùng',
+        description: 'Email',
         example: 'user@example.com'
     })
     email: string;
 
     @ApiProperty({
-        description: 'Tên của người dùng',
+        description: 'User full name',
         example: 'User Name'
     })
-    name: string;
+    fullname: string;
 }
 
 export class AuthResponseDto {
     @ApiProperty({
-        description: 'JWT access token dùng để xác thực các request',
+        description: 'JWT access token',
         example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
     })
     accessToken: string;
 
     @ApiProperty({
-        description: 'JWT refresh token dùng để tạo mới access token khi hết hạn',
+        description: 'JWT refresh token ',
         example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
     })
     refreshToken: string;
 
     @ApiProperty({
-        description: 'Thời gian hết hạn của access token (tính bằng giây)',
+        description: 'Access token expire time',
         example: 36000,
         type: Number
     })
     expiresIn: number;
 
     @ApiProperty({
-        description: 'Thông tin người dùng',
+        description: 'User information',
         type: UserResponseDto
     })
     user: UserResponseDto;
@@ -49,25 +49,25 @@ export class AuthResponseDto {
 
 export class RegisterResponseDto {
     @ApiProperty({
-        description: 'ID của người dùng mới đăng ký',
+        description: 'New registered user ID',
         example: 'new_user_id'
     })
     id: string;
 
     @ApiProperty({
-        description: 'Email của người dùng',
+        description: 'Email',
         example: 'newuser@example.com'
     })
     email: string;
 
     @ApiProperty({
-        description: 'Tên của người dùng',
+        description: 'User full name',
         example: 'New User'
     })
-    name: string;
+    fullname: string;
 
     @ApiProperty({
-        description: 'Thời gian tạo tài khoản',
+        description: 'Create at',
         example: '2024-03-21T10:00:00Z'
     })
     createdAt: string;
@@ -75,19 +75,19 @@ export class RegisterResponseDto {
 
 export class RefreshTokenResponseDto {
     @ApiProperty({
-        description: 'JWT access token mới',
+        description: 'New JWT access token',
         example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
     })
     accessToken: string;
 
     @ApiProperty({
-        description: 'JWT refresh token mới',
+        description: 'New JWT refresh token',
         example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
     })
     refreshToken: string;
 
     @ApiProperty({
-        description: 'Thời gian hết hạn của access token mới (tính bằng giây)',
+        description: 'Expire time of refresh token in milisecond',
         example: 36000,
         type: Number
     })

@@ -32,13 +32,7 @@ export class UserService {
 
         return {
             message: 'Registration successful',
-            data: {
-                id: userNew.id,
-                email: userNew.email,
-                fullname: userNew.fullname,
-                phone: userNew.phone,
-                createdAt: userNew.createdAt,
-            }
+            data: userNew,
         };
     }
 
@@ -63,16 +57,9 @@ export class UserService {
 
         const [data, total] = await queryBuilder.skip(skip).take(take).getManyAndCount();
 
-        return {
-            data,
-            total,
-            page,
-            pageSize: take,
-            totalPages: Math.ceil(total / take),
-        };
+        return { data, total, page, pageSize: take, totalPages: Math.ceil(total / take),  };
     }
 
-   
     async update(id: number, updateUserDto: UpdateUserDto): Promise<any> {
         const user = await this.userRepository.findOne({ where: { id } });
         if (!user) {
@@ -80,6 +67,10 @@ export class UserService {
         }
         if ('email' in updateUserDto) {
             throw new HttpException('You are not allowed to update email', HttpStatus.BAD_REQUEST);
+        }
+
+         if ('password' in updateUserDto) {
+            throw new HttpException('You are not allowed to update password', HttpStatus.BAD_REQUEST);
         }
 
         const {...rest } = updateUserDto;

@@ -15,10 +15,10 @@ export class UserController {
 
     @Public()
     @Post('register')
-    @ApiOperation({ summary: 'Tạo tài khoản mới' })
+    @ApiOperation({ summary: 'Register a new user' })
     @ApiBody({
         type: CreateUserDto,
-        description: 'Thông tin đăng ký',
+        description: 'Registration information for a new user. Email must be unique.',
         examples: {
             example1: {
                 value: {
@@ -37,7 +37,7 @@ export class UserController {
     })
     @ApiResponse({
         status: 201,
-        description: 'Đăng ký thành công',
+        description: 'Registration successful',
         type: ResponseUserDto
     })
     async register(@Body() createuserDto: CreateUserDto, @Req() req: Request) {
@@ -45,17 +45,17 @@ export class UserController {
     }
 
     @Put(':id')
-    @ApiOperation({ summary: 'Cập nhật thông tin user' })
+    @ApiOperation({ summary: 'Update user information' })
     @ApiBearerAuth('access_token') 
     @ApiParam({ 
         name: 'id', 
         type: 'number', 
-        description: 'ID của user cần cập nhật',
+        description: 'User ID to update',
         example: 1
     })
     @ApiBody({
         type: UpdateUserDto,
-        description: 'Thông tin cần cập nhật cho user. Email không được phép thay đổi.',
+        description: 'Update user information. Email and password cannot be changed',
         examples: {
             example1: {
                 value: {
@@ -73,7 +73,7 @@ export class UserController {
     })
     @ApiResponse({ 
         status: 200, 
-        description: 'Cập nhật user thành công',
+        description: 'Updae user information successfully',
         schema: {
             example: {
                 id: 1,
@@ -94,20 +94,21 @@ export class UserController {
 
     @Get(':id')
     @ApiBearerAuth('access_token') 
-    @ApiOperation({ summary: 'Lấy thông tin user theo ID' })
+    @ApiOperation({ summary: 'Get user information by ID' })
     @ApiParam({ 
         name: 'id', 
         type: 'number', 
-        description: 'ID của user cần lấy thông tin',
+        description: 'User ID to retrieve',
         example: 1
     })
     @ApiResponse({ 
         status: 200, 
-        description: 'Thông tin user',
+        description: 'User information retrieved successfully',
         schema: {
             example: {
                 id: 1,
                 fullname: 'Nguyen Van A',
+                displayName: 'This is my display name',
                 phone: '0123456789',
                 profilepic: 'https://example.com/avatar.jpg',
                 coverpic: 'https://example.com/cover.jpg',
@@ -128,16 +129,17 @@ export class UserController {
 
     @Get()
     @ApiBearerAuth('access_token') 
-    @ApiOperation({ summary: 'Tìm kiếm user' })
+    @ApiOperation({ summary: 'Search users by name or email' })
     @ApiResponse({ 
         status: 200, 
-        description: 'Danh sách user',
+        description: 'User list retrieved successfully',
         schema: {
             example: {
                 items: [
                     {
                        id: 1,
                         fullname: 'Nguyen Van A',
+                        displayName: 'This is my display name',
                         phone: '0123456789',
                         profilepic: 'https://example.com/avatar.jpg',
                         coverpic: 'https://example.com/cover.jpg',
@@ -150,12 +152,7 @@ export class UserController {
                         updatedAt: '2024-03-20T10:00:00Z'
                     }
                 ],
-                meta: {
-                    total: 1,
-                    page: 1,
-                    limit: 10,
-                    totalPages: 1
-                }
+                meta: {  total: 1, page: 1, limit: 10, totalPages: 1 }
             }
         }
     })

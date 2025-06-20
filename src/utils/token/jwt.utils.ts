@@ -7,8 +7,7 @@ import { parseDurationToSeconds } from '../other/parseDurationToSeconds';
 export function generateTokens(jwtService: JwtService, payload: { 
     sub: number; 
     email: string;
-    fullname?: string;
-    roles?: string;
+    fullname?: string;    
 }) {
 
 
