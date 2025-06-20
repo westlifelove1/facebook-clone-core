@@ -1,6 +1,6 @@
-import { BadRequestException, Controller, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Controller, Post, UploadedFile, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { CommonService } from './common.service';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiConsumes, ApiBody, ApiResponse } from '@nestjs/swagger';
 
 @ApiTags('Backend / Common')
@@ -9,17 +9,17 @@ export class CommonController {
     constructor(private readonly commonService: CommonService) { }
 
     @Post('upload-image')
-    @UseInterceptors(FileInterceptor('file'))
+    @UseInterceptors(FilesInterceptor('files', 10))
     @ApiOperation({ summary: 'Upload an image file' })
     @ApiConsumes('multipart/form-data')
     @ApiBody({
         schema: {
             type: 'object',
             properties: {
-                file: {
-                    type: 'string',
+                files: {
+                    type: 'array',
                     format: 'binary',
-                    description: 'Image file to upload (supported formats: jpg, jpeg, png, gif)'
+                    description: 'Image files to upload (supported formats: jpg, jpeg, png, gif)'
                 }
             }
         }
@@ -30,9 +30,12 @@ export class CommonController {
         schema: {
             type: 'object',
             properties: {
-                path: {
-                    type: 'string',
-                    description: 'Path to the uploaded image'
+                paths: {
+                    type: 'array',
+                    items: {
+                        type: 'string',
+                        description: 'Path to the uploaded image',
+                    },
                 }
             }
         }
@@ -41,14 +44,21 @@ export class CommonController {
         status: 400,
         description: 'Bad Request - No file uploaded'
     })
-    async uploadImage(@UploadedFile() file: Express.Multer.File) {
-        if (!file) {
-            throw new BadRequestException('No file uploaded');
+    async uploadImage(@UploadedFiles() files: Express.Multer.File[]) {
+       if (!files || files.length === 0) {
+        throw new BadRequestException('No files uploaded');
         }
 
-        const filePath = await this.commonService.uploadImage(file);
+        // const filePath = await this.commonService.uploadImage(files);
+        // return {
+        //     path: filePath
+        // };
+
+        const filePaths = await Promise.all(
+             files.map((file) => this.commonService.uploadImage(file)),
+        );
         return {
-            path: filePath
+            paths: filePaths,
         };
     }
 }

@@ -30,6 +30,7 @@ export class PostSearchService implements OnApplicationBootstrap {
                         createdAt: { type: 'date', format: 'strict_date_optional_time||epoch_millis' },
                         updatedAt: { type: 'date', format: 'strict_date_optional_time||epoch_millis' },
                         user: {
+                            type: "nested",
                             properties: {
                                 id: { type: 'integer' },
                                 fullname: {
@@ -62,18 +63,22 @@ export class PostSearchService implements OnApplicationBootstrap {
         const isNumber = q && /^\d+$/.test(q);  
         console.log("userId:", userId); 
 
-        const query: any = {
-            bool: {
-                must: [
-                    {
-                        term: {
+       const query: any = {
+                    bool: {
+                        must: [
+                        {
+                            term: {
                             isType: 0
+                            }
+                        },
+                        {
+                            term: {
+                            userId: userId
+                            }
                         }
+                        ]
                     }
-                ]
-            }
         };
-
         // Add search term if provided
         if (q) {
             query.bool.should = [
