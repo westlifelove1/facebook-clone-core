@@ -8,6 +8,7 @@
 /src/
 keys
 src/common/firebase/
+src/common/firebase/firebase-admin-key.json
 
 
 # Logs
