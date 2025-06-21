@@ -7,7 +7,7 @@
 # Keys
 /src/
 keys
-/common/firebase
+src/common/firebase/
 
 
 # Logs
