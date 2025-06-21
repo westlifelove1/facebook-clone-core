@@ -136,7 +136,7 @@ import { ReactionRepository } from './modules/backend/reaction/reaction.reposito
 export class AppModule implements NestModule {
     constructor() {
         const app = initializeApp({
-            credential: credential.cert('src/common/firebase/firebase-admin-key.json'),
+            credential: credential.cert('src/common/keys/firebase-admin-key.json'),
         });
         console.log('AppModule constructor');
     }
