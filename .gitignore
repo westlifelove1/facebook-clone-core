@@ -5,7 +5,10 @@
 /uploads
 
 # Keys
-/src/keys
+/src/
+keys
+/src/common/firebase
+
 
 # Logs
 # logs
