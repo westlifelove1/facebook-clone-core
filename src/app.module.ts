@@ -10,6 +10,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import * as mime from 'mime-types';
 import { ScheduleModule } from '@nestjs/schedule';
+import * as path from 'path';
 
 // Libaries Third Party
 import { initializeApp } from 'firebase-admin/app'; // kết nối firebase
@@ -135,10 +136,15 @@ import { ReactionRepository } from './modules/backend/reaction/reaction.reposito
 })
 export class AppModule implements NestModule {
     constructor() {
-        const app = initializeApp({
-            credential: credential.cert('src/common/keys/firebase-admin-key.json'),
+        const firebaseApp = initializeApp({
+        credential: credential.cert({
+            projectId: process.env.FIREBASE_PROJECT_ID,
+            clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+            privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+            }),
         });
-        console.log('AppModule constructor');
+
+        console.log('Firebase App Initialized');
     }
     configure(consumer: MiddlewareConsumer) {
         consumer
