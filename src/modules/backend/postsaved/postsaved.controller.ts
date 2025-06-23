@@ -17,12 +17,16 @@ export class PostSavedController {
   }
 
   @Get()
-  
   findAll(@Request() req) {
     const userId = Number(req.user?.sub);
     if (!userId || isNaN(userId)) {
         throw new BadRequestException('ID nguoi dung khong hop le');
     }
     return this.postSavedService.findAll(userId);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.postSavedService.remove(+id);
   }
 }

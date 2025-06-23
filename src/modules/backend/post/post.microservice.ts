@@ -14,8 +14,8 @@ export class PostMicroservice {
         return this.PostSearchService.indexPost(data.document);
     }
 
-    @EventPattern('delete_comment_index')
-    async handleDeletePostIndex(@Payload() data: { commentId: number }) {
-        return this.PostSearchService.deletePostFromIndex(data.commentId);
+    @EventPattern('delete_post_index')
+    async handleDeletePostIndex(@Payload() data: { id: number }) {
+        return this.PostSearchService.deletePostFromIndex(data.id);
     }
 } 
