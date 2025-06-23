@@ -5,6 +5,8 @@ import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { Public } from 'src/decorators/public.decorator';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiHeader } from '@nestjs/swagger';
 import { AuthResponseDto, RefreshTokenResponseDto } from './dto/auth-response.dto';
+import { ForgotPasswordDto } from '../user/dto/forgot-password.dto';
+import { ResetPasswordDto } from '../user/dto/reset-password.dto';
 
 @ApiTags('Backend / Auth')
 @Controller()
@@ -83,6 +85,17 @@ export class AuthController {
         return this.authService.refreshToken(refreshTokenDto);
     }
 
+
+    @Post('forgot-password')
+    async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    await this.authService.forgotPassword(dto);
+        return { message: 'If your email exists, a reset link has been sent.' };
+    }
+
+    @Post('reset-password')
+    async resetPassword(@Body() dto: ResetPasswordDto) {
+        return await this.authService.resetPassword(dto);
+    }
 
     /*     @Post('login-google-supabase')
     @ApiOperation({ summary: 'Đăng nhập bằng Google thông qua Supabase' })

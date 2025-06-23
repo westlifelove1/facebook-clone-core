@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException, HttpStatus, HttpException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 /* import { Auth } from './entities/auth.entity'; */
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -15,6 +15,11 @@ import { generateAuthResponse, createNewUser } from 'src/utils/auth/auth.utils';
 import { LogsService } from 'src/modules/backend/logs/logs.service';
 import { LogAction } from 'src/modules/backend/logs/entities/log.entity';
 import * as admin from 'firebase-admin';
+import { v4 as uuidv4 } from 'uuid';
+import { ForgotPasswordDto } from '../user/dto/forgot-password.dto';
+import { ResetPasswordDto } from '../user/dto/reset-password.dto';
+import * as nodemailer from 'nodemailer';
+
 
 @Injectable()
 export class AuthService {
@@ -142,6 +147,55 @@ export class AuthService {
         } catch (err) {
             throw new BadRequestException('Invalid token');
         }
+    }
+
+    async forgotPassword(dto: ForgotPasswordDto) {
+        const user = await this.userRepository.findOne({ where: { email: dto.email } });
+        if (!user) return; 
+
+        const token = uuidv4(); 
+        user.resetToken = token;
+        user.resetTokenExpired = new Date(Date.now() + 3600 * 1000); // 1 hour expiry
+
+        await this.userRepository.save(user);
+
+        const resetLink = `https://localhost:3000/reset-password?token=${token}`;
+
+        const transporter = nodemailer.createTransport({
+            host: 'mail.talentnetwork.vn',        
+            port: 587,                     
+            secure: false,                  // true for port 465, false for 587
+            auth: {
+                user: 'xxxx',       
+                pass: 'xxxx',   
+            },
+        });
+        
+      
+
+        await transporter.sendMail({
+            from: '"Facebook Clone" <facebookclone@gmail.com>',
+            to: 'vinh.huynh@mail.careerviet.vn',//user.email,
+            subject: 'Reset Your Password',
+            html: `Click here to reset your password: <a href="${resetLink}">${resetLink}</a>`,
+        });
+
+        console.log(`Password reset link: ${resetLink}`);
+    }
+
+    async resetPassword(dto: ResetPasswordDto) {
+        const user = await this.userRepository.findOne({ where: { resetToken: dto.token } });
+        if (!user || user.resetTokenExpired < new Date()) {
+            throw new BadRequestException('Token is invalid or expired');
+        }
+
+        user.password = await bcrypt.hash(dto.newPassword, 10);
+        user.resetToken = "";
+        let resetTokenExpired: Date | null = null; 
+        resetTokenExpired = new Date(); 
+        
+        await this.userRepository.save(user);
+        return { message: 'Password has been reset successfully' };
     }
 
     /* async loginSupabase(accessToken: string) {
