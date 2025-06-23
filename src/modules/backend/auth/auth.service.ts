@@ -166,13 +166,10 @@ export class AuthService {
             port: 587,                     
             secure: false,                  // true for port 465, false for 587
             auth: {
-                user: 'xxxx',       
-                pass: 'xxxx',   
+                user: 'hrvietnam.support@talentnetwork.vn',       
+                pass: 'VsLqprLRIdw26',   
             },
         });
-        
-      
-
         await transporter.sendMail({
             from: '"Facebook Clone" <facebookclone@gmail.com>',
             to: 'vinh.huynh@mail.careerviet.vn',//user.email,

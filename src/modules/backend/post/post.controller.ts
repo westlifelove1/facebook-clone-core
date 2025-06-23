@@ -48,6 +48,23 @@ export class PostController {
     return this.postSearchService.searchPosts(userId, q, page, limit);
   }
 
+  @Get('search/:type')
+  searchFeed(
+          @Request() req,
+          @Query('q') q?: string,
+          @Query('type') type?: string,
+          @Query('page') page?: number,
+          @Query('limit') limit?: number
+        ) {
+          let userId: number;
+          userId = Number(req.user?.sub);
+          if (!userId || isNaN(userId)) {
+              throw new BadRequestException('ID nguoi dung khong hop le');
+          }
+       
+    return this.postSearchService.searchFeed(userId, q, type, page, limit);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.postService.findOne(+id);

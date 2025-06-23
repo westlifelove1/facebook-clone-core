@@ -58,6 +58,58 @@ export class PostSearchService implements OnApplicationBootstrap {
         });
     }
 
+    async searchFeed(userId: number, q?: string, type?:string, page = 1, limit = 10) {
+        const from = (page - 1) * limit;
+        const isNumber = q && /^\d+$/.test(q);  
+        console.log("userId:", userId); 
+
+        if (type == 'top'){
+            var query: any = {
+                bool: {
+                    must: [
+                        {
+                            term: {
+                                isType: 0
+                            }
+                        },
+                      
+                    ]
+                }
+            };
+        }else if (type == 'photo') {
+
+        }else if (type == 'video') {
+           
+        }else {  
+        
+        }
+       
+
+
+        const result = await this.searchService.search({
+            index: this.indexEs,
+            query,
+            from,
+            size: limit,
+            sort: [
+                {
+                    createdAt: {
+                        order: 'desc',
+                    },
+                },
+            ],
+        });
+
+        const total =
+            typeof result.hits.total === 'number'
+                ? result.hits.total
+                : result.hits.total?.value || 0;
+
+        const data = result.hits.hits.map((hit) => hit._source);
+
+        return { data, total, page, limit };
+    }
+
     async searchPosts(userId: number, q?: string, page = 1, limit = 10) {
         const from = (page - 1) * limit;
         const isNumber = q && /^\d+$/.test(q);  

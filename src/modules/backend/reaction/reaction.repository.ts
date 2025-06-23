@@ -20,5 +20,6 @@ export class ReactionRepository {
     );
     console.log(`Reactions for post id ${postId} saved!`);
     await this.postReactRepo.save(entities);
+    
   }
 }
