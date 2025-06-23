@@ -90,25 +90,25 @@ export class ReactionController {
     return this.reactionService.create(createReactionDto, userId);
   }
 
-  @Get()
-  findAll() {
-    return this.reactionService.findAll();
-  }
+  // @Get()
+  // findAll() {
+  //   return this.reactionService.findAll();
+  // }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.reactionService.getReactions(id);
   }
 
-  @Get('post/:postId')
-  getPostReactions(@Param('postId') postId: string) {
-    return this.reactionService.getPostReactions(+postId);
-  }
+  // @Get('post/:postId')
+  // getPostReactions(@Param('postId') postId: string) {
+  //   return this.reactionService.getPostReactions(+postId);
+  // }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateReactionDto: UpdateReactionDto) {
-    return this.reactionService.update(+id, updateReactionDto);
-  }
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateReactionDto: UpdateReactionDto) {
+  //   return this.reactionService.update(+id, updateReactionDto);
+  // }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
