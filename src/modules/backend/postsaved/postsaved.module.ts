@@ -10,10 +10,12 @@ import { Post } from '../post/entities/post.entity';
 import { User } from '../user/entities/user.entity';
 import configuration from 'src/config/configuration';
 import { rabbitMqConfig } from 'src/service/rabbitMQ/rabbitmq.config';
+import { NotifyService } from '../notify/notify.service';
+import { Notify } from '../notify/entities/notify.entity';
 
 @Module({
   imports: [
-            TypeOrmModule.forFeature([Post, User, PostSaved]),
+            TypeOrmModule.forFeature([Post, User, PostSaved, Notify]),
             JwtModule.register({
                 secret: configuration().jwt.secret,
                 signOptions: { expiresIn: configuration().jwt.expires || '1h'},
@@ -29,6 +31,7 @@ import { rabbitMqConfig } from 'src/service/rabbitMQ/rabbitmq.config';
     
   ],
   controllers: [PostSavedController],
-  providers: [PostSavedService],
+  providers: [PostSavedService, NotifyService],
+  exports: [PostSavedService, NotifyService]
 })
 export class PostSavedModule {}
