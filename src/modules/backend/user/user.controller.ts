@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Body, Param, Query, Put, Request, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, Put, Request, Req, BadRequestException } from '@nestjs/common';
 import { ApiTags, ApiQuery, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody, ApiParam } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { User } from './entities/user.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ResponseUserDto } from './dto/response-user.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { Public }  from 'src/decorators/public.decorator'; 
 
 
@@ -185,5 +186,32 @@ export class UserController {
         const pageNum = page ? Number(page) : 1;
         const limitNum = limit ? Number(limit) : 10;
         return this.userService.findAll(q, pageNum, limitNum);
+    }
+
+    @Post('change-password')
+    @ApiBearerAuth('access_token') 
+    @ApiOperation({ summary: 'Change password profile' })
+    @ApiBody({
+        type: ChangePasswordDto,
+        description: 'Change password request body',
+        examples: {
+            example: {
+                value: {
+                    currentPassword: '123456',
+                    newPassword: 'NewPassword123',
+                    confirmNewPassword: 'NewPassword123'
+                }
+            }
+        }
+    })
+    async changePassword(
+        @Request() req,
+        @Body() dto: ChangePasswordDto,
+    ) {
+        const userId = Number(req.user?.sub);
+        if (!userId || isNaN(userId)) {
+            throw new BadRequestException('ID người dùng không hợp lệ');
+        } 
+        return this.userService.changePassword(userId, dto);
     }
 }
