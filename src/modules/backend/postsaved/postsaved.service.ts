@@ -42,4 +42,18 @@ constructor(
   findAll(userId : number) {
     return this.postSavedRepository.find({where: { userId: userId }, relations: ['post'] });
   }
+
+   findOne(postId: number) {
+    return this.postSavedRepository.findOne({ where: { postId: postId }, relations: ['post'] });
+  }
+
+  async remove(postId: number): Promise<void> {
+      const postsaved = await this.findOne(postId);
+      if (!postsaved) {
+          throw new Error(`Postsaved with id ${postId} not found`);
+      }
+      await this.postSavedRepository.remove(postsaved);
+  }
+
+  
 }
