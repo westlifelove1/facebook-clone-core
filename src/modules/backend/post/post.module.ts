@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { PostService } from './post.service';
 import { PostController } from './post.controller';
 import { Post } from '../post/entities/post.entity';
-
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 import { ElasticsearchModule } from '@nestjs/elasticsearch';
@@ -15,6 +14,8 @@ import { PostSearchService } from './post-search.service';
 import { User } from '../user/entities/user.entity';
 import { Photo } from '../photo/entities/photo.entity';
 import { Notify } from '../notify/entities/notify.entity';
+import { NotifyService } from '../notify/notify.service';
+
 @Module({
   imports: [
         TypeOrmModule.forFeature([Post, User, Photo, Notify]),
@@ -34,7 +35,7 @@ import { Notify } from '../notify/entities/notify.entity';
         ]),
     ],
   controllers: [PostController,PostMicroservice],
-  providers: [PostService, PostSearchService],
-  exports: [PostService, PostSearchService]
+  providers: [PostService, PostSearchService, NotifyService],
+  exports: [PostService, PostSearchService, NotifyService]
 })
 export class PostModule {}

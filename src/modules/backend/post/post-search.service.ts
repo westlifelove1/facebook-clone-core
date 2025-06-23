@@ -164,19 +164,19 @@ export class PostSearchService implements OnApplicationBootstrap {
         return { message: `Post ${postId} deleted from ES.` };
     }
 
-    async deleteByFieldId(commentId: number) {
+    async deleteByFieldId(postId: number) {
         const result = await this.searchService.deleteByQuery({
             index: this.indexEs,
             query: {
                 match: {
-                    id: commentId,
+                    id: postId,
                 },
             },
         });
 
         return {
             deleted: result.deleted,
-            message: `Deleted all documents with id = ${commentId}`,
+            message: `Deleted all documents with id = ${postId}`,
         };
     }
 } 

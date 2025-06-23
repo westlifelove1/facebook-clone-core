@@ -18,14 +18,14 @@ export class PostSaved {
     userId: number;
 
 
-    @ManyToOne(() => User)
+    @ManyToOne(() => User, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'userId' })
     user: User;
 
     @PrimaryColumn()
     postId: number;
 
-    @ManyToOne(() => Post)
+    @ManyToOne(() => Post, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'postId' })
     post: Post;
     

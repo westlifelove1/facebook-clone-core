@@ -28,7 +28,7 @@ export class Photo {
     @CreateDateColumn()
     createdAt: Date;
 
-    @ManyToOne(() => Post, post => post.photos)
+    @ManyToOne(() => Post, post => post.photos, { onDelete: 'CASCADE' })
     post: Post;
         
     @ManyToOne(() => User, user => user.photos, { onDelete: 'CASCADE' })
