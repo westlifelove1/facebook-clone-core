@@ -7,6 +7,7 @@ import { UpdateCommentDto } from './dto/update-comment.dto';
 import { User } from '../user/entities/user.entity';
 import { Post } from '../post/entities/post.entity';
 import { ClientProxy } from '@nestjs/microservices';
+import { Notify } from '../notify/entities/notify.entity';
 
 @Injectable()
 export class CommentService {
@@ -15,6 +16,10 @@ export class CommentService {
         private commentRepository: Repository<Comment>,
         @InjectRepository(Post)
         private postRepository: Repository<Post>,
+        @InjectRepository(User)
+        private userRepository: Repository<User>,
+        @InjectRepository(Notify)
+        private notifyRepository: Repository<Notify>,
         @Inject('APP_SERVICE') private readonly client: ClientProxy,
     ) {}
 
@@ -23,14 +28,14 @@ export class CommentService {
         if (!post) {
             throw new HttpException(`Bai viet khong ton tai`, HttpStatus.BAD_REQUEST);
         }
-        // const user = await this.userRepository.findOne({ where: { id: userId } });
-        // if (!user) {
-        //     throw new HttpException(`Tai khoan khong ton tai`, HttpStatus.BAD_REQUEST);
-        // }
+        const user = await this.userRepository.findOne({ where: { id: userId } });
+        if (!user) {
+            throw new HttpException(`Tai khoan khong ton tai`, HttpStatus.BAD_REQUEST);
+        }
         // console.log(JSON.stringify(user, null, 4));
         const comment = this.commentRepository.create({
             content: createCommentDto.content,
-            author: { id: userId } as User,
+            author: user,
             post: post,
         });
 
@@ -50,6 +55,19 @@ export class CommentService {
         this.client.send('index.comment', {
             index: 'comment',
             document: newComment,
+        }).subscribe();
+
+        const notify = this.notifyRepository.create({   
+            user: user,
+            post: post,
+            content: `User ${user.fullname} has updated a post`,
+        });
+        await this.notifyRepository.save(notify);
+        // Emit event to index the post
+
+        this.client.emit('index_notify', {
+            index: 'notify',
+            document: notify,
         }).subscribe();
 
         return {

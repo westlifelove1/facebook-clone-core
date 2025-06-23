@@ -22,17 +22,17 @@ export class ReactionService {
     ) {}
 
     private getReactionSetKey(postId: number, reaction: string) {
-        console.log(`post:${postId}:${reaction}`);
+        // console.log(`post:${postId}:${reaction}`);
         return `post:${postId}:${reaction}`;
       }
     
-      private getReactionCountKey(postId: number) {
+      private getReactionCountKey(postId: number): string {
         return `post:${postId}:reactions`;
       }
 
-      private getReactionHashKey(postId: string): string {
-        return `post:${postId}:reactions`;
-      }
+    //   private getReactionHashKey(postId: string): string {
+    //     return `post:${postId}:reactions`;
+    //   }
 
     async create(createReactionDto: CreateReactionDto, userId: number): Promise<any> {
         const post = await this.postRepository.findOne({ where: { id: createReactionDto.postId } });
@@ -97,6 +97,10 @@ export class ReactionService {
 
     async remove(id: number): Promise<void> {
         const reaction = await this.findOne(id);
+        const removed = await this.redis.srem(this.getReactionSetKey(reaction.post.id, reaction.type), reaction.user.id);
+        if (removed) {
+          await this.redis.hincrby(this.getReactionCountKey(reaction.post.id), reaction.type, -1);
+        }
         await this.reactionRepository.remove(reaction);
     }
 
@@ -113,7 +117,7 @@ export class ReactionService {
     }
 
     async getReactions(postId: string): Promise<Record<string, string>> {
-        const key = this.getReactionHashKey(postId);
+        const key = this.getReactionCountKey(<number><unknown>postId);
         return await this.redis.hgetall(key);
     }
       
@@ -123,7 +127,7 @@ export class ReactionService {
       }
     
       async clearReactions(postId: string) {
-        const key = this.getReactionHashKey(postId);
+        const key = this.getReactionCountKey(<number><unknown>postId);
         await this.redis.del(key);
       }
 }

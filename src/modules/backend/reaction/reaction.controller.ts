@@ -97,7 +97,7 @@ export class ReactionController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.reactionService.findOne(+id);
+    return this.reactionService.getReactions(id);
   }
 
   @Get('post/:postId')

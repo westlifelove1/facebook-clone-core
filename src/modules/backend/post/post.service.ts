@@ -66,7 +66,7 @@ export class PostService {
             await this.photoRepository.save(photos);
         }
 
-        console.log('Post created:', post);
+        // console.log('Post created:', post);
         this.client.send('index_post', {
             index: 'post',
             document: post,

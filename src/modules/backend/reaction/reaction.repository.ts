@@ -18,7 +18,7 @@ export class ReactionRepository {
         count: parseInt(count, 10),
       }),
     );
-
+    console.log(`Reactions for post id ${postId} saved!`);
     await this.postReactRepo.save(entities);
   }
 }

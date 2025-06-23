@@ -10,7 +10,7 @@ export class PostMicroservice {
 
     @EventPattern('index_post')
     async handleMessage(@Payload() data: { index: string; document: any }) {
-        console.log('handleIndexPost', data);
+        // console.log('handleIndexPost', data);
         return this.PostSearchService.indexPost(data.document);
     }
 
