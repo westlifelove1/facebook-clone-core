@@ -64,6 +64,11 @@ export class User {
     @JoinColumn()
     auth: Auth; */
 
+    @Column({ nullable: true })
+    resetToken: string;
+
+    @Column({ nullable: true })
+    resetTokenExpired: Date;
 
     @OneToMany(() => Post, (post) => post.user)
     posts: Post[];
