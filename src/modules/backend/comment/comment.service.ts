@@ -28,14 +28,14 @@ export class CommentService {
         if (!post) {
             throw new HttpException(`Bai viet khong ton tai`, HttpStatus.BAD_REQUEST);
         }
-        const user = await this.userRepository.findOne({ where: { id: userId } });
-        if (!user) {
-            throw new HttpException(`Tai khoan khong ton tai`, HttpStatus.BAD_REQUEST);
-        }
+        // const user = await this.userRepository.findOne({ where: { id: userId } });
+        // if (!user) {
+        //     throw new HttpException(`Tai khoan khong ton tai`, HttpStatus.BAD_REQUEST);
+        // }
         // console.log(JSON.stringify(user, null, 4));
         const comment = this.commentRepository.create({
             content: createCommentDto.content,
-            author: user,
+            author: { id: userId } as User,
             post: post,
         });
 
@@ -58,9 +58,9 @@ export class CommentService {
         }).subscribe();
 
         const notify = this.notifyRepository.create({   
-            user: user,
+            user: { id: userId } as User,
             post: post,
-            content: `User ${user.fullname} has updated a post`,
+            content: `User has commented to a post`,
         });
         await this.notifyRepository.save(notify);
         // Emit event to index the post

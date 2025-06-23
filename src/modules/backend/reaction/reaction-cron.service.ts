@@ -16,7 +16,7 @@ export class ReactionCronService {
   async persistReactionsToDB() {
     console.log(`Cron insert reactions started!`);
     const postIds = await this.reactionService.getAllPostIds();
-
+console.log(postIds);
     for (const postId of postIds) {
       console.log(`Post ID: ${postId}`);
       const reactionMap = await this.reactionService.getReactions(postId);
