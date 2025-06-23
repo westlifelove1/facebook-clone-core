@@ -1,7 +1,7 @@
-import { Controller, Get, Post, Body,  Param, Delete,UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, Param, Delete,UseGuards, Request ,UnauthorizedException} from '@nestjs/common';
 import { FriendrequestService } from './friendrequest.service';
 import { RespondFriendRequestDto } from './dto/respond-friendrequest.dto';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam, ApiBody,ApiQuery } from '@nestjs/swagger';
 import { AuthGuard } from '../../../guards/auth/auth.guard';
 
 @ApiTags('Backend/friendrequest')
@@ -42,4 +42,23 @@ export class FriendrequestController {
   getPendingRequests(@Param('userId') userId: number) {
     return this.friendrequestService.getPendingRequests(userId);
   }
+
+  @Get('friendstatus/:otherUserId')
+  @ApiOperation({ summary: 'check friend status of a user' })
+  async checkFriendStatus(@Request() req, @Param('otherUserId') otherId: number) {
+    const userId = req.user.id;
+    const status = await this.friendrequestService.getFriendStatus(userId, otherId);
+    return { status }; // ví dụ: { status: 1 }
+  }
+
+   @Get('friends/suggestions')
+    @ApiOperation({ summary: 'Get friend suggestions' })
+    @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
+    @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
+  async getSuggestions(  @Request() req,  @Query('page') page = 1,  @Query('limit') limit = 10, ) {
+    const userId = req.user?.id;
+    if (!userId) throw new UnauthorizedException();
+    return this.friendrequestService.friendSuggestion(+userId, +page, +limit);;
+  }
+
 }
