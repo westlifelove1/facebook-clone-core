@@ -21,7 +21,7 @@ export class CommonController {
 
 
     @Post('upload-video')
-    @UseInterceptors(FileInterceptor('file', {
+    @UseInterceptors(FileInterceptor('files', {
         storage: diskStorage({
         destination: './uploads/videos',
         filename: (req, file, cb) => {
@@ -47,6 +47,38 @@ export class CommonController {
         path: file.path,
         };
     }
+
+    @Post('upload-videos')
+    @UseInterceptors(FilesInterceptor('files', 5, {
+        storage: diskStorage({
+        destination: './uploads/videos',
+        filename: (req, file, cb) => {
+            const ext = extname(file.originalname);
+            cb(null, `${Date.now()}-${Math.round(Math.random() * 1e6)}${ext}`);
+        },
+        }),
+        fileFilter: (req, file, cb) => {
+        if (allowedMimeTypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new BadRequestException('Only video files are allowed'), false);
+        }
+        },
+        limits: {
+        fileSize: 100 * 1024 * 1024, // Max 100MB per file
+        },
+    }))
+    
+    uploadMultipleVideos(@UploadedFiles() files: Express.Multer.File[]) {
+        return {
+        message: 'Videos uploaded successfully',
+        files: files.map(file => ({
+            filename: file.filename,
+            path: file.path,
+        })),
+        };
+    }
+    
     
     @Post('upload-image')
     @UseInterceptors(FilesInterceptor('files', 10))
