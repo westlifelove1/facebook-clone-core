@@ -84,11 +84,11 @@ export class ReactionService {
         }
     }
 
-    async findAll(): Promise<Reaction[]> {
-        return this.reactionRepository.find({
-            relations: ['user', 'post']
-        });
-    }
+    // async findAll(): Promise<Reaction[]> {
+    //     return this.reactionRepository.find({
+    //         relations: ['user', 'post']
+    //     });
+    // }
 
     async findOne(id: number): Promise<Reaction> {
         const reaction = await this.reactionRepository.findOne({
@@ -103,11 +103,11 @@ export class ReactionService {
         return reaction;
     }
 
-    async update(id: number, updateReactionDto: UpdateReactionDto): Promise<Reaction> {
-        const reaction = await this.findOne(id);
-        Object.assign(reaction, updateReactionDto);
-        return this.reactionRepository.save(reaction);
-    }
+    // async update(id: number, updateReactionDto: UpdateReactionDto): Promise<Reaction> {
+    //     const reaction = await this.findOne(id);
+    //     Object.assign(reaction, updateReactionDto);
+    //     return this.reactionRepository.save(reaction);
+    // }
 
     async remove(id: number): Promise<void> {
         const reaction = await this.findOne(id);
@@ -118,17 +118,17 @@ export class ReactionService {
         await this.reactionRepository.remove(reaction);
     }
 
-    async getPostReactions(postId: number): Promise<{ type: ReactionType; count: number }[]> {
-        const reactions = await this.reactionRepository
-            .createQueryBuilder('reaction')
-            .select('reaction.type', 'type')
-            .addSelect('COUNT(*)', 'count')
-            .where('reaction.post.id = :postId', { postId })
-            .groupBy('reaction.type')
-            .getRawMany();
+    // async getPostReactions(postId: number): Promise<{ type: ReactionType; count: number }[]> {
+    //     const reactions = await this.reactionRepository
+    //         .createQueryBuilder('reaction')
+    //         .select('reaction.type', 'type')
+    //         .addSelect('COUNT(*)', 'count')
+    //         .where('reaction.post.id = :postId', { postId })
+    //         .groupBy('reaction.type')
+    //         .getRawMany();
 
-        return reactions;
-    }
+    //     return reactions;
+    // }
 
     async getReactions(postId: string): Promise<Record<string, string>> {
         const key = this.getReactionCountKey(<number><unknown>postId);
