@@ -42,13 +42,16 @@ export class PagesService {
     return user?.likedPages || [];
   }
 
-  async getSuggestedPages(userId: number) {
+  async getSuggestedPages(userId: number): Promise<Page[]> {
     const likedPages = await this.getLikedPages(userId);
     const likedIds = likedPages.map(p => p.id);
 
     return this.pageRepo.find({
-      where: likedIds.length > 0 ? { id: Not(In(likedIds)) } : {},
+      where: likedIds.length
+        ? { id: Not(In(likedIds)) }
+        : {},
       take: 10,
     });
   }
+
 }

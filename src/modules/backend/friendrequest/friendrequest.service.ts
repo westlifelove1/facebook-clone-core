@@ -17,12 +17,12 @@ export class FriendrequestService {
   ) {}
 
     async sendRequest(senderId: number, receiverId: number) {
-    const sender = await this.userRepo.findOneBy({ id: senderId });
-    const receiver = await this.userRepo.findOneBy({ id: receiverId });
+      const sender = await this.userRepo.findOneBy({ id: senderId });
+      const receiver = await this.userRepo.findOneBy({ id: receiverId });
 
-    if (!sender || !receiver) throw new NotFoundException('User not found');
+      if (!sender || !receiver) throw new NotFoundException('User not found');
 
-    const request = this.friendRequestRepo.create({ sender, receiver });
+      const request = this.friendRequestRepo.create({ sender, receiver });
     return this.friendRequestRepo.save(request);
   }
 
@@ -80,24 +80,31 @@ export class FriendrequestService {
     };
   }
 
-  async unfriend(userId: number, friendId: number): Promise<string> {
+  async cancelOrUnfriend(userId: number, friendId: number): Promise<string> {
     const request = await this.friendRequestRepo.findOne({
       where: [
-        { sender: { id: userId }, receiver: { id: friendId }, status: 'accept' },
-        { sender: { id: friendId }, receiver: { id: userId }, status: 'accept' },
+        { sender: { id: userId }, receiver: { id: friendId } },
+        { sender: { id: friendId }, receiver: { id: userId } },
       ],
       relations: ['sender', 'receiver'],
     });
 
     if (!request) {
-      throw new NotFoundException('Friendship not found');
+      throw new NotFoundException('No friend request or relationship found');
     }
+
+    const { status } = request;
 
     await this.friendRequestRepo.remove(request);
 
-    return 'Friend removed successfully';
+    if (status === 'pending') {
+      return 'Friend request canceled successfully';
+    } else if (status === 'accept') {
+      return 'Friend removed successfully';
+    } else {
+      return `Relationship with status "${status}" removed`;
+    }
   }
-
 
   async getFriendStatus(userId: number, otherUserId: number): Promise<FriendStatus> {
     if (userId === otherUserId) return FriendStatus.NONE; 

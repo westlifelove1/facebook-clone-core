@@ -6,12 +6,15 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ResponseUserDto } from './dto/response-user.dto';
 import { Public }  from 'src/decorators/public.decorator'; 
-
+import { UserSearchService } from './user-search.service';
+import { EventPattern, Payload } from '@nestjs/microservices';
 
 @ApiTags('Backend / User')
 @Controller()
 export class UserController {
-    constructor(private readonly userService: UserService) {}
+    constructor(private readonly userService: UserService,
+        private readonly userSearchService: UserSearchService
+    ) {}
 
     @Public()
     @Post('register')
@@ -186,4 +189,11 @@ export class UserController {
         const limitNum = limit ? Number(limit) : 10;
         return this.userService.findAll(q, pageNum, limitNum);
     }
+
+    @EventPattern('index_user')
+    async handleIndexUser(@Payload() data: { document: any }) {
+        console.log('[index_user] Received:', data);
+        return await this.userSearchService.indexUser(data.document);
+    }
+
 }

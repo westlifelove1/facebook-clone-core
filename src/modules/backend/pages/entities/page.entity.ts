@@ -10,6 +10,9 @@ export class Page {
   name: string;
 
   @Column({ nullable: true })
+  pagePicture: string;
+
+  @Column({ nullable: true })
   description: string;
 
   @CreateDateColumn()

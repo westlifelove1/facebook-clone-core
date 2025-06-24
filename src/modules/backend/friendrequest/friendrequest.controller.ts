@@ -11,7 +11,7 @@ import { AuthGuard } from '../../../guards/auth/auth.guard';
 export class FriendrequestController {
   constructor(private readonly friendrequestService: FriendrequestService) {}
 
-  @Post('send/:senderId/:receiverId')
+  @Post('/:receiverId')
   @ApiOperation({ summary: 'Send friend request' })
   sendRequest( @Param('receiverId') receiverId: number,  @Request() req,) {
     const senderId = req.user.id; 
@@ -19,7 +19,7 @@ export class FriendrequestController {
   }
 
   @Post('respond')
-  @ApiOperation({ summary: 'Respond to a friend request' })
+  @ApiOperation({ summary: 'Respond to a friend request (accept or reject)' })
   respondToRequest( @Body() dto: RespondFriendRequestDto, @Request() req,) {
     const receiverId = req.user.id; 
     return this.friendrequestService.respondRequest(dto.senderId, receiverId, dto.status);
@@ -28,7 +28,7 @@ export class FriendrequestController {
   @Delete('unfriend/:userId/:friendId')
   @ApiOperation({ summary: 'Remove a friend from friend list' })
   unfriend(@Param('userId') userId: number,  @Param('friendId') friendId: number, ) {
-    return this.friendrequestService.unfriend(userId, friendId);
+    return this.friendrequestService.cancelOrUnfriend(userId, friendId);
   }
 
   @Get('friends/:userId')
