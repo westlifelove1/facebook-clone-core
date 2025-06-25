@@ -3,7 +3,7 @@ import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { Public } from 'src/decorators/public.decorator';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiHeader } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiHeader,ApiBearerAuth } from '@nestjs/swagger';
 import { AuthResponseDto, RefreshTokenResponseDto } from './dto/auth-response.dto';
 
 @ApiTags('Backend / Auth')
@@ -37,6 +37,7 @@ export class AuthController {
 
     @Post('login-google-firebase')
     @ApiOperation({ summary: 'Login with Google/Firebase' })
+    @ApiBearerAuth('access_token')
     @ApiHeader({
         name: 'authorization',
         description: 'Firebase token',
@@ -58,7 +59,6 @@ export class AuthController {
         const token = authHeader.split(' ')[1];
         return this.authService.loginWithGoogle(token);
     }
-
 
 
     @Post('refresh-token')
