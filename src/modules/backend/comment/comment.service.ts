@@ -16,8 +16,6 @@ export class CommentService {
         private commentRepository: Repository<Comment>,
         @InjectRepository(Post)
         private postRepository: Repository<Post>,
-        @InjectRepository(User)
-        private userRepository: Repository<User>,
         @InjectRepository(Notify)
         private notifyRepository: Repository<Notify>,
         @Inject('APP_SERVICE') private readonly client: ClientProxy,
@@ -28,11 +26,7 @@ export class CommentService {
         if (!post) {
             throw new HttpException(`Bai viet khong ton tai`, HttpStatus.BAD_REQUEST);
         }
-        // const user = await this.userRepository.findOne({ where: { id: userId } });
-        // if (!user) {
-        //     throw new HttpException(`Tai khoan khong ton tai`, HttpStatus.BAD_REQUEST);
-        // }
-        // console.log(JSON.stringify(user, null, 4));
+        
         const comment = this.commentRepository.create({
             content: createCommentDto.content,
             author: { id: userId } as User,
@@ -76,15 +70,6 @@ export class CommentService {
         };
     }
 
-    // async findAll(): Promise<Comment[]> {
-    //     return this.commentRepository.find({
-    //         relations: ['author', 'post', 'parentComment', 'replies'],
-    //         order: {
-    //             createdAt: 'DESC'
-    //         }
-    //     });
-    // }
-
     async findOne(id: number): Promise<Comment> {
         const comment = await this.commentRepository.findOne({
             where: { id },
@@ -104,7 +89,7 @@ export class CommentService {
         const updatedComment = await this.commentRepository.save(comment);
 
         // Update the comment in Elasticsearch
-        this.client.emit('index_comment', {
+        this.client.emit('index.comment', {
             index: 'comment',
             document: updatedComment,
         }).subscribe();
@@ -123,21 +108,5 @@ export class CommentService {
         this.client.emit('delete.comment', {
             commentId: id,
         }).subscribe();
-    }
-
-    async getPostComments(postId: number): Promise<Comment[]> {
-        return this.commentRepository.find({
-            where: {
-                post: { id: postId },
-                parentComment: IsNull()
-            },
-            relations: ['author', 'replies', 'replies.author'],
-            order: {
-                createdAt: 'DESC',
-                replies: {
-                    createdAt: 'ASC'
-                }
-            }
-        });
     }
 }

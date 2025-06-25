@@ -16,15 +16,12 @@ export class ReactionCronService {
   async persistReactionsToDB() {
     console.log(`Cron insert reactions started!`);
     const postIds = await this.reactionService.getAllPostIds();
-console.log(postIds);
     for (const postId of postIds) {
-      console.log(`Post ID: ${postId}`);
       const reactionMap = await this.reactionService.getReactions(postId);
 
       if (Object.keys(reactionMap).length === 0) continue;
 
       await this.reactionRepo.saveReactionCounts(postId, reactionMap);
-      await this.reactionService.clearReactions(postId);
       
     }
   }

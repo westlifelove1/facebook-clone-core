@@ -76,13 +76,13 @@ export class CommentSearchService implements OnApplicationBootstrap {
 
     async indexComment(document: any) {
         try {
-            console.log('Indexing comment:', JSON.stringify(document, null, 2));
+            // console.log('Indexing comment:', JSON.stringify(document, null, 2));
             const result = await this.searchService.index({
                 index: this.indexEs,
                 id: document.id.toString(),
                 document: document,
             });
-            console.log('Indexing result:', result);
+            // console.log('Indexing result:', result);
             return result;
         } catch (error) {
             console.error('Error indexing comment:', error);
