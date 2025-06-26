@@ -8,6 +8,7 @@ import { User } from '../user/entities/user.entity';
 import { Post } from '../post/entities/post.entity';
 import { ClientProxy } from '@nestjs/microservices';
 import { Notify } from '../notify/entities/notify.entity';
+import { relative } from 'path';
 
 @Injectable()
 export class CommentService {
@@ -22,7 +23,7 @@ export class CommentService {
     ) {}
 
     async create(createCommentDto: CreateCommentDto, userId: number): Promise<any> {
-        const post = await this.postRepository.findOne({ where: { id: createCommentDto.postId } });
+        const post = await this.postRepository.findOne({ where: { id: createCommentDto.postId }, relations: ['user', 'comments', 'reactions'] });
         if (!post) {
             throw new HttpException(`Bai viet khong ton tai`, HttpStatus.BAD_REQUEST);
         }
@@ -62,6 +63,14 @@ export class CommentService {
         this.client.emit('index_notify', {
             index: 'notify',
             document: notify,
+        }).subscribe();
+
+        post.userId = userId; 
+        this.client.emit('index_post', {
+            index: 'post',
+            _id : post.id.toString(),
+            id: post.id,
+            document: post,
         }).subscribe();
 
         return {
