@@ -34,7 +34,7 @@ export class ReactionService {
     }
 
     async create(createReactionDto: CreateReactionDto, userId: number): Promise<any> {
-        const post = await this.postRepository.findOne({ where: { id: createReactionDto.postId } });
+        const post = await this.postRepository.findOne({ where: { id: createReactionDto.postId }, relations: ['user', 'comments', 'reactions'] });
         if (!post) {
             throw new HttpException(`Bai viet khong ton tai`, HttpStatus.BAD_REQUEST);
         }
