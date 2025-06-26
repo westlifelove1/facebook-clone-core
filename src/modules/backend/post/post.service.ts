@@ -23,8 +23,6 @@ export class PostService {
         @InjectRepository(Notify)
         private notifyRepository: Repository<Notify>,
         @Inject('APP_SERVICE') private readonly client: ClientProxy,
-        
-
     ) {}
 
   private readonly allowedImageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'];
@@ -92,7 +90,7 @@ export class PostService {
   }
 
   isImageFile(url: string): boolean {
-    return /\.(jpe?g|png|gif|bmp|webp)$/i.test(url);
+    return /\.(jpe?g|png|gif|jpg|bmp|webp)$/i.test(url);
 }
 
   findAll() {
