@@ -123,10 +123,14 @@ export class PostService {
         }
 
         Object.assign(post, updatePostDto);
-        const updatedPost = await this.postRepository.save(post);
+        post.updatedAt = new Date();
         
+        const updatedPost = await this.postRepository.save(post);
+        updatedPost.userId = user.id; 
         this.client.emit('index_post', {
             index: 'post',
+            _id : updatedPost.id.toString(),
+            id: updatedPost.id,
             document: updatedPost,
         }).subscribe();
           

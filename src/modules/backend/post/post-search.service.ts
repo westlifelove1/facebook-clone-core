@@ -63,7 +63,7 @@ export class PostSearchService implements OnApplicationBootstrap {
         const bulkBody = posts.flatMap(post => [
             { index: { _index: this.indexEs, _id: post.id } },
             {
-                posts
+                post
             }
         ]);
         const result = await this.searchService.bulk({ body: bulkBody });
@@ -148,10 +148,13 @@ export class PostSearchService implements OnApplicationBootstrap {
                             }
                         },
                         {
-                            term: {
-                            userId: userId
+                            "nested": {
+                            "path": "user",
+                            "query": {
+                                "term": { "user.id": userId }
                             }
-                        }
+                            }
+                        },
                         ]
                     }
         };
@@ -165,22 +168,10 @@ export class PostSearchService implements OnApplicationBootstrap {
                             fuzziness: 'auto'
                         }
                     }
-                },
-                {
-                    nested: {
-                        path: 'user',
-                        query: {
-                            match: {
-                                'user.fullname': {
-                                    query: q,
-                                    fuzziness: 'auto'
-                                }
-                            }
-                        }
-                    }
                 }
+                
             ];
-            
+
             // If query is a number, add ID match
             if (isNumber) {
                 query.bool.should.push({
@@ -191,8 +182,8 @@ export class PostSearchService implements OnApplicationBootstrap {
             }
         }
 
-        // console.log('Search query:', JSON.stringify(query));
-
+        console.log('Search query:', JSON.stringify(query));
+        console.log('from:', from, 'limit:', limit);
         const result = await this.searchService.search({
             index: this.indexEs,
             query,
@@ -200,7 +191,7 @@ export class PostSearchService implements OnApplicationBootstrap {
             size: limit,
             sort: [
                 {
-                    createdAt: {
+                    updatedAt: {
                         order: 'desc',
                     },
                 },
