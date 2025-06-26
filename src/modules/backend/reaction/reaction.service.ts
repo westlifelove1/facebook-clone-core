@@ -39,21 +39,6 @@ export class ReactionService {
             throw new HttpException(`Bai viet khong ton tai`, HttpStatus.BAD_REQUEST);
         }
 
-        const notify = this.notifyRepository.create({   
-            user: { id: userId } as User,
-            post: post,
-            content: `User has reacted to a post`,
-        });
-        await this.notifyRepository.save(notify);
-        // Emit event to index the post
-        
-        this.client.emit('index_notify', {
-            index: 'notify',
-            document: notify,
-        }).subscribe();
-        await this.redis.sadd(this.getReactionSetKey(createReactionDto.postId, createReactionDto.type), userId);
-        await this.redis.hincrby(this.getReactionCountKey(createReactionDto.postId), createReactionDto.type, 1);
-        
         // Check if user already reacted to this post
         const existingReaction = await this.reactionRepository.findOne({
             where: {
@@ -61,17 +46,67 @@ export class ReactionService {
                 post: { id: post.id }
             }
         });
+
+        let isNewReaction = false;
+        let hasTypeChanged = false;
+        let previousType: string | undefined;
+
         if (existingReaction) {
-            // Update existing reaction
-            const removed = await this.redis.srem(this.getReactionSetKey(createReactionDto.postId, existingReaction.type), userId);
-            if (removed) {
-                await this.redis.hincrby(this.getReactionCountKey(createReactionDto.postId), existingReaction.type, -1);
+            if (existingReaction.type !== createReactionDto.type) {
+                hasTypeChanged = true;
+                previousType = existingReaction.type;
             }
-            existingReaction.type = createReactionDto.type;
-            return this.reactionRepository.save(existingReaction);
+        } else {
+            isNewReaction = true;
+        }
+
+        // Only update Redis if new reaction or type changed
+        if (isNewReaction || hasTypeChanged) {
+            // Add to new reaction set and increment count
+            await this.redis.sadd(this.getReactionSetKey(createReactionDto.postId, createReactionDto.type), userId);
+            await this.redis.hincrby(this.getReactionCountKey(createReactionDto.postId), createReactionDto.type, 1);
+        }
+        // Remove from previous reaction set and decrement count if type changed
+        if (hasTypeChanged && previousType) {
+            const removed = await this.redis.srem(this.getReactionSetKey(createReactionDto.postId, previousType), userId);
+            if (removed) {
+                await this.redis.hincrby(this.getReactionCountKey(createReactionDto.postId), previousType, -1);
+            }
+        }
+
+        // Only create notification and emit events if new reaction or type changed
+        if (isNewReaction || hasTypeChanged) {
+            const notify = this.notifyRepository.create({   
+                user: { id: userId } as User,
+                post: post,
+                content: `User has reacted to a post`,
+            });
+            await this.notifyRepository.save(notify);
+            // Emit event to index the post
+            this.client.emit('index_notify', {
+                index: 'notify',
+                document: notify,
+            }).subscribe();
+
+            post.userId = userId; 
+            this.client.emit('index_post', {
+                index: 'post',
+                _id : post.id.toString(),
+                id: post.id,
+                document: post,
+            }).subscribe();
+        }
+
+        if (existingReaction) {
+            if (hasTypeChanged) {
+                existingReaction.type = createReactionDto.type;
+                return this.reactionRepository.save(existingReaction);
+            }
+            // If reaction exists and type didn't change, just return it
+            return existingReaction;
         } else {
             // Create new reaction
-            const newReaction = await this.reactionRepository.create({
+            const newReaction = this.reactionRepository.create({
                 type: createReactionDto.type,
                 user: { id: userId } as User,
                 post
@@ -129,4 +164,16 @@ export class ReactionService {
         const keys = await this.redis.keys('post:*:reactions');
         return keys.map(k => k.split(':')[1]); // Extract postId
     }
+
+    async getUsersReactedToPost(postId: number): Promise<{userName: string, type: ReactionType }[]> {
+        const reactions = await this.reactionRepository.find({
+          where: { post: { id: postId } },
+          relations: ['user'],
+          select: ['id', 'type', 'user'],
+        });
+        return reactions.map(r => ({
+          userName: r.user.fullname,
+          type: r.type,
+        }));
+      }
 }

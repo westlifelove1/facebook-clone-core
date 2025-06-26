@@ -65,6 +65,25 @@ export class ReactionController {
   //   return this.reactionService.getPostReactions(+postId);
   // }
 
+  @Get('post/:postId/users')
+  @ApiOperation({ summary: 'tổng hợp user react của 1 post' })
+  @ApiBody({
+    schema: {
+        type: 'object',
+        required: ['postId'],
+        properties: {
+            postId: {
+                type: 'number',
+                example: '1',
+                description: 'ID của post'
+            }
+        }
+    }
+  })
+  async getUsersReactedToPost(@Param('postId') postId: string) {
+    return this.reactionService.getUsersReactedToPost(+postId);
+  }
+
   @Delete(':id')
   @ApiOperation({ summary: 'xóa reaction' })
   @ApiBody({

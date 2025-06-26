@@ -18,9 +18,8 @@ export class ReactionCronService {
     const postIds = await this.reactionService.getAllPostIds();
     for (const postId of postIds) {
       const reactionMap = await this.reactionService.getReactions(postId);
-
       if (Object.keys(reactionMap).length === 0) continue;
-
+// console.log(reactionMap);
       await this.reactionRepo.saveReactionCounts(postId, reactionMap);
       
     }
