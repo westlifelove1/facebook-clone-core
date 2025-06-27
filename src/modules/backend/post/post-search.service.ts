@@ -56,6 +56,7 @@ export class PostSearchService implements OnApplicationBootstrap {
 
     private async indexData() {
         const posts = await this.postService.findAll(); 
+        console.log(posts);
         if (!posts.length) {
             console.log('No posts found to index.');
             return;
@@ -83,7 +84,7 @@ export class PostSearchService implements OnApplicationBootstrap {
                     isActive: post.user.isActive,
                     createdAt: post.user.createdAt.toISOString(),
                     updatedAt: post.user.updatedAt.toISOString(),
-                }  
+                },
             }
         ]);
         const result = await this.searchService.bulk({ body: bulkBody });
