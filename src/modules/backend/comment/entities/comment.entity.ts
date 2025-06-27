@@ -22,7 +22,7 @@ export class Comment {
     @ManyToOne(() => User, user => user.comments)
     author: User;
 
-    @ManyToOne(() => Post, post => post.comments)
+    @ManyToOne(() => Post, post => post.comments,  { onDelete: 'CASCADE' })
     post: Post;
 
     @ManyToOne(() => Comment, comment => comment.replies, { nullable: true })

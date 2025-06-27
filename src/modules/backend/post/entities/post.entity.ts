@@ -42,10 +42,10 @@ export class Post {
     @ManyToOne(() => User, user => user.posts)
     user: User;
 
-    @OneToMany(() => Comment, comment => comment.post)
+    @OneToMany(() => Comment, comment => comment.post, { cascade: true })
     comments: Comment[];
 
-    @OneToMany(() => Reaction, reaction => reaction.post)
+    @OneToMany(() => Reaction, reaction => reaction.post, { cascade: true })
     reactions: Reaction[];
     
     @OneToMany(() => Photo, photo => photo.post, { cascade: true })
