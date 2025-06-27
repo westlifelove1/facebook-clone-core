@@ -14,14 +14,15 @@ export class FriendrequestController {
   @Post('/:receiverId')
   @ApiOperation({ summary: 'Send friend request' })
   sendRequest( @Param('receiverId') receiverId: number,  @Request() req,) {
-    const senderId = req.user.id; 
+    const senderId = Number(req.user?.sub);
+    console.log('Sender ID:', senderId);
     return this.friendrequestService.sendRequest(senderId, receiverId);
   }
 
   @Post('respond')
   @ApiOperation({ summary: 'Respond to a friend request (accept or reject)' })
   respondToRequest( @Body() dto: RespondFriendRequestDto, @Request() req,) {
-    const receiverId = req.user.id; 
+    const receiverId = Number(req.user?.sub);
     return this.friendrequestService.respondRequest(dto.senderId, receiverId, dto.status);
   }
 
@@ -46,7 +47,7 @@ export class FriendrequestController {
   @Get('friendstatus/:otherUserId')
   @ApiOperation({ summary: 'check friend status of a user' })
   async checkFriendStatus(@Request() req, @Param('otherUserId') otherId: number) {
-    const userId = req.user.id;
+    const userId = Number(req.user?.sub);
     const status = await this.friendrequestService.getFriendStatus(userId, otherId);
     return { status }; // ví dụ: { status: 1 }
   }
@@ -56,7 +57,7 @@ export class FriendrequestController {
     @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
     @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
   async getSuggestions(  @Request() req,  @Query('page') page = 1,  @Query('limit') limit = 10, ) {
-    const userId = req.user?.id;
+    const userId = Number(req.user?.sub);
     if (!userId) throw new UnauthorizedException();
     return this.friendrequestService.friendSuggestion(+userId, +page, +limit);;
   }

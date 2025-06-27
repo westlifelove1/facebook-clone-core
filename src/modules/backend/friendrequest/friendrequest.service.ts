@@ -18,7 +18,9 @@ export class FriendrequestService {
 
     async sendRequest(senderId: number, receiverId: number) {
       const sender = await this.userRepo.findOneBy({ id: senderId });
+      console.log('Sender:', sender);
       const receiver = await this.userRepo.findOneBy({ id: receiverId });
+      console.log('Receiver:', receiver);
 
       if (!sender || !receiver) throw new NotFoundException('User not found');
 
