@@ -36,7 +36,7 @@ export class PostController {
           @Query('limit') limit?: number
         ) {
           let userId: number;
-          if (typeof user_id !== 'undefined' && user_id < 0) {
+          if (typeof user_id !== 'undefined' && user_id > 0) {
             userId = Number(user_id);
           } else {
             userId = Number(req.user?.sub);
@@ -44,8 +44,29 @@ export class PostController {
                 throw new BadRequestException('ID nguoi dung khong hop le');
             }
           }
-       
+          console.log('userId', userId);
     return this.postSearchService.searchPosts(userId, q, page, limit);
+  }
+
+  @Get('user')
+  newsFeedUser(
+          @Request() req,
+          @Query('q') q?: string,
+          @Query('user_id') user_id?: number,
+          @Query('page') page?: number,
+          @Query('limit') limit?: number
+        ) {
+          let userId: number;
+          if (typeof user_id !== 'undefined' && user_id > 0) {
+            userId = Number(user_id);
+          } else {
+            userId = Number(req.user?.sub);
+            if (!userId || isNaN(userId)) {
+                throw new BadRequestException('ID nguoi dung khong hop le');
+            }
+          }
+          console.log('userId', userId);
+    return this.postSearchService.searchUserPosts(userId, q, page, limit);
   }
 
   @Get('search/:type')
