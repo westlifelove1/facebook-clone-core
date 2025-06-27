@@ -56,7 +56,8 @@ constructor(
         document: notify,
     }).subscribe();
 
-    return postSaved;
+    const postSavedData = await this.postSavedRepository.findOne({ where: { postId: postId, userId: userId }, relations: ['post', 'user'] });
+    return postSavedData;
   }
 
   findAll(userId : number) {

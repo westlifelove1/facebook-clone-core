@@ -15,7 +15,7 @@ export class PhotoService {
    findByUserId(userId: number, type: number, page: number, limit: number) {
     return this.photoRepository.find({
       where: { user: { id: userId }, isType: type },  
-      relations: ['post'],
+      relations: ['post', 'user'],
       skip: page ? (page - 1) * limit : 0,
       take: limit ? limit : 10,
     });
