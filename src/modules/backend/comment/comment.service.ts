@@ -23,7 +23,7 @@ export class CommentService {
     ) {}
 
     async create(createCommentDto: CreateCommentDto, userId: number): Promise<any> {
-        const post = await this.postRepository.findOne({ where: { id: createCommentDto.postId }, relations: ['user', 'comments', 'reactions'] });
+        const post = await this.postRepository.findOne({ where: { id: createCommentDto.postId } });
         if (!post) {
             throw new HttpException(`Bai viet khong ton tai`, HttpStatus.BAD_REQUEST);
         }
@@ -65,13 +65,16 @@ export class CommentService {
             document: notify,
         }).subscribe();
 
-        post.userId = userId; 
-        this.client.emit('index_post', {
-            index: 'post',
-            _id : post.id.toString(),
-            id: post.id,
-            document: post,
-        }).subscribe();
+        const updatedPost = await this.postRepository.findOne({ where: { id: createCommentDto.postId }, relations: ['user', 'comments', 'reactions'] });
+        if (updatedPost) {
+            updatedPost.userId = userId; 
+            this.client.emit('index_post', {
+                index: 'post',
+                _id : updatedPost.id.toString(),
+                id: updatedPost.id,
+                document: updatedPost,
+            }).subscribe();
+        }
 
         return {
             msg: "success",
@@ -111,11 +114,21 @@ export class CommentService {
 
     async remove(id: number): Promise<void> {
         const comment = await this.findOne(id);
-        await this.commentRepository.remove(comment);
-        
         // Delete the comment from Elasticsearch
         this.client.emit('delete.comment', {
             commentId: id,
         }).subscribe();
+        
+        const updatedPost = await this.postRepository.findOne({ where: { id: comment.post.id }, relations: ['user', 'comments', 'reactions'] });
+        if (updatedPost) {
+            updatedPost.userId = comment.author.id; 
+            this.client.emit('index_post', {
+                index: 'post',
+                _id : updatedPost.id.toString(),
+                id: updatedPost.id,
+                document: updatedPost,
+            }).subscribe();
+        }
+        await this.commentRepository.remove(comment);
     }
 }
