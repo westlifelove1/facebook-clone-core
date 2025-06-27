@@ -75,14 +75,14 @@ export class AuthService {
         };
     }
 
-    async loginWithGoogle(token: string) {
-        if (!token) {
+    async loginWithGoogle(idToken: string) {
+        if (!idToken) {
             throw new BadRequestException('No token provided');
         }
          let decodedToken: admin.auth.DecodedIdToken;
          
         try {
-            const decodedToken = await adminGG.auth().verifyIdToken(token);
+            const decodedToken = await adminGG.auth().verifyIdToken(idToken);
             await this.logsService.createAuthLog({
                 name: `Google login attempt for ${decodedToken.email}`,
                 action: LogAction.LOGIN,

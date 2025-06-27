@@ -6,18 +6,20 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { ClientProxy } from '@nestjs/microservices';
 
 @Injectable()
 export class UserService {
     constructor(
         @InjectRepository(User)
         private userRepository: Repository<User>,
+        @Inject('SEARCH_SERVICE') private readonly searchClient: ClientProxy
     ) { }
 
      async register(createuserDto: CreateUserDto, req: Request) {
         // Check if email already exists
-        var email= createuserDto.email;
-        const existingUser = await this.userRepository.findOne({ where: { email } });
+        var userEmail= createuserDto.email;
+        const existingUser = await this.userRepository.findOne({ where: { email:userEmail } });
 
         if (existingUser) {
             throw new HttpException('Email already exists', HttpStatus.BAD_REQUEST);
@@ -30,6 +32,11 @@ export class UserService {
 
         const user = this.userRepository.create({...createuserDto, password: hashedPassword,});
         const userNew = await this.userRepository.save(user);
+        const { fullname, email, phone, displayname, bio, workingPlace } = user;
+         // Emit event để index user vào Elasticsearch
+        this.searchClient.emit('index_user', {
+            document: { fullname, email, phone, displayname, bio, workingPlace },
+        });
 
         return {
             message: 'Registration successful',
