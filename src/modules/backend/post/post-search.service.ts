@@ -63,7 +63,27 @@ export class PostSearchService implements OnApplicationBootstrap {
         const bulkBody = posts.flatMap(post => [
             { index: { _index: this.indexEs, _id: post.id } },
             {
-                post
+                id: post.id,
+                isType: post.isType,
+                content: post.content,  
+                mediaUrl: post.mediaUrl || [],
+                friends: post.friends || null,
+                createdAt: post.createdAt.toISOString(),
+                updatedAt: post.updatedAt.toISOString(),
+                user: {
+                    id: post.user.id,   
+                    fullname: post.user.fullname,
+                    email: post.user.email,
+                    profilepic: post.user.profilepic,
+                    coverpic: post.user.coverpic,
+                    displayname: post.user.displayname,
+                    bio: post.user.bio,
+                    birthplace: post.user.birthplace,
+                    workingPlace: post.user.workingPlace,
+                    isActive: post.user.isActive,
+                    createdAt: post.user.createdAt.toISOString(),
+                    updatedAt: post.user.updatedAt.toISOString(),
+                }  
             }
         ]);
         const result = await this.searchService.bulk({ body: bulkBody });
@@ -144,7 +164,7 @@ export class PostSearchService implements OnApplicationBootstrap {
                         must: [
                         {
                             term: {
-                            isType: 0
+                                isType: 0
                             }
                         },
                         {

@@ -159,7 +159,7 @@ export class AuthService {
 
         await this.userRepository.save(user);
 
-        const resetLink = `https://localhost:3000/reset-password?token=${token}`;
+        const resetLink = `http://localhost:3000/reset-password?token=${token}`;
 
         const transporter = nodemailer.createTransport({
             host: 'mail.talentnetwork.vn',        
@@ -172,7 +172,7 @@ export class AuthService {
         });
         await transporter.sendMail({
             from: '"Facebook Clone" <facebookclone@gmail.com>',
-            to: 'vinh.huynh@mail.careerviet.vn',//user.email,
+            to: user.email,
             subject: 'Reset Your Password',
             html: `Click here to reset your password: <a href="${resetLink}">${resetLink}</a>`,
         });
