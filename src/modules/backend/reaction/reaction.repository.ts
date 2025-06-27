@@ -11,15 +11,22 @@ export class ReactionRepository {
   ) {}
 
   async saveReactionCounts(postId: string, reactions: Record<string, string>) {
-    const entities = Object.entries(reactions).map(([reaction, count]) =>
-      this.postReactRepo.create({
-        postId,
-        type: reaction,
-        count: parseInt(count, 10),
-      }),
-    );
-    console.log(`Reactions for post id ${postId} saved!`);
-    await this.postReactRepo.save(entities);
-    
+    const promises = Object.entries(reactions).map(async ([reaction, count]) => {
+      const existReact = await this.postReactRepo.findOne({ where: { postId: postId, type: reaction } });
+      if (existReact) {
+        await this.postReactRepo.update(existReact.id, {
+          type: reaction,
+          count: parseInt(count, 10),
+        });
+      } else {
+        const newReact = this.postReactRepo.create({
+          postId,
+          type: reaction,
+          count: parseInt(count, 10),
+        });
+        await this.postReactRepo.save(newReact);
+      }
+    });
+    await Promise.all(promises);
   }
 }

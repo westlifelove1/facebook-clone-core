@@ -9,6 +9,7 @@ import { Post } from '../post/entities/post.entity';
 import { Notify } from '../notify/entities/notify.entity';
 import { ClientProxy } from '@nestjs/microservices';
 import Redis from 'ioredis';
+import { PostReaction } from '../entities/post-reaction.entity';
 
 type RedisPipeline = ReturnType<Redis['pipeline']>;
 
@@ -21,6 +22,8 @@ export class ReactionService {
         private postRepository: Repository<Post>,
         @InjectRepository(Notify)
         private notifyRepository: Repository<Notify>,
+        @InjectRepository(PostReaction)
+        private readonly postReactRepo: Repository<PostReaction>,
         @Inject('REDIS_CLIENT') private readonly redis: Redis,
         @Inject('APP_SERVICE') private readonly client: ClientProxy,
     ) { }
@@ -34,7 +37,7 @@ export class ReactionService {
     }
 
     async create(createReactionDto: CreateReactionDto, userId: number): Promise<any> {
-        const post = await this.postRepository.findOne({ where: { id: createReactionDto.postId }, relations: ['user', 'comments', 'reactions'] });
+        const post = await this.postRepository.findOne({ where: { id: createReactionDto.postId } });
         if (!post) {
             throw new HttpException(`Bai viet khong ton tai`, HttpStatus.BAD_REQUEST);
         }
@@ -88,19 +91,23 @@ export class ReactionService {
                 document: notify,
             }).subscribe();
 
-            post.userId = userId; 
-            this.client.emit('index_post', {
-                index: 'post',
-                _id : post.id.toString(),
-                id: post.id,
-                document: post,
-            }).subscribe();
         }
 
         if (existingReaction) {
             if (hasTypeChanged) {
                 existingReaction.type = createReactionDto.type;
-                return this.reactionRepository.save(existingReaction);
+                const nr = await this.reactionRepository.save(existingReaction);
+                const updatedPost = await this.postRepository.findOne({ where: { id: createReactionDto.postId }, relations: ['user', 'comments', 'reactions'] });
+                if (updatedPost) {
+                    updatedPost.userId = userId; 
+                    this.client.emit('index_post', {
+                        index: 'post',
+                        _id : updatedPost.id.toString(),
+                        id: updatedPost.id,
+                        document: updatedPost,
+                    }).subscribe();
+                }
+                return nr;
             }
             // If reaction exists and type didn't change, just return it
             return existingReaction;
@@ -111,7 +118,18 @@ export class ReactionService {
                 user: { id: userId } as User,
                 post
             });
-            return await this.reactionRepository.save(newReaction);
+            const nr = await this.reactionRepository.save(newReaction);
+            const updatedPost = await this.postRepository.findOne({ where: { id: createReactionDto.postId }, relations: ['user', 'comments', 'reactions'] });
+            if (updatedPost) {
+                updatedPost.userId = userId; 
+                this.client.emit('index_post', {
+                    index: 'post',
+                    _id : updatedPost.id.toString(),
+                    id: updatedPost.id,
+                    document: updatedPost,
+                }).subscribe();
+            }
+            return nr;
         }
     }
 
@@ -141,6 +159,16 @@ export class ReactionService {
             await this.redis.hincrby(this.getReactionCountKey(reaction.post.id), reaction.type, -1);
         }
         await this.reactionRepository.remove(reaction);
+        const updatedPost = await this.postRepository.findOne({ where: { id: reaction.post.id }, relations: ['user', 'comments', 'reactions'] });
+        if (updatedPost) {
+            updatedPost.userId = reaction.user.id; 
+            this.client.emit('index_post', {
+                index: 'post',
+                _id : updatedPost.id.toString(),
+                id: updatedPost.id,
+                document: updatedPost,
+            }).subscribe();
+        }
     }
 
     // async getPostReactions(postId: number): Promise<{ type: ReactionType; count: number }[]> {
@@ -155,9 +183,10 @@ export class ReactionService {
     //     return reactions;
     // }
 
-    async getReactions(postId: string): Promise<Record<string, string>> {
+    async getReactions(postId: string): Promise<any> {
         const key = this.getReactionCountKey(<number><unknown>postId);
-        return await this.redis.hgetall(key);
+        console.log(key);
+       return await this.redis.hgetall(key);
     }
 
     async getAllPostIds(): Promise<string[]> {

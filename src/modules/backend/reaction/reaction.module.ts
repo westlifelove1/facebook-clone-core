@@ -12,10 +12,11 @@ import { ClientsModule } from '@nestjs/microservices';
 import { rabbitMqConfig } from 'src/service/rabbitMQ/rabbitmq.config';
 import { ConfigService } from '@nestjs/config';
 import { User } from '../user/entities/user.entity';
+import { PostReaction } from '../entities/post-reaction.entity';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([Reaction, Post, User, Notify]),
+        TypeOrmModule.forFeature([Reaction, Post, User, Notify, PostReaction]),
         JwtModule.register({
             secret: configuration().jwt.secret,
             signOptions: { expiresIn: configuration().jwt.expires || '1h'},
