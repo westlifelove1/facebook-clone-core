@@ -11,7 +11,18 @@ import { AuthGuard } from '../../../guards/auth/auth.guard';
 export class FriendrequestController {
   constructor(private readonly friendrequestService: FriendrequestService) {}
 
-  @Post('/:receiverId')
+   @Get('suggestions')
+    @ApiOperation({ summary: 'Get friend suggestions' })
+    @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
+    @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
+  async getSuggestions(  @Request() req,  @Query('page') page = 1,  @Query('limit') limit = 10, ) {
+    const userId = Number(req.user?.sub);
+    console.log('friends/suggestions User ID:', userId);
+    if (!userId) throw new UnauthorizedException();
+    return this.friendrequestService.friendSuggestion(+userId, +page, +limit);;
+  }
+
+  @Post(':receiverId')
   @ApiOperation({ summary: 'Send friend request' })
   sendRequest( @Param('receiverId') receiverId: number,  @Request() req,) {
     const senderId = Number(req.user?.sub);
@@ -32,11 +43,6 @@ export class FriendrequestController {
     return this.friendrequestService.cancelOrUnfriend(userId, friendId);
   }
 
-  @Get('friends/:userId')
-  @ApiOperation({ summary: 'Get friend list of a user' })
-  getFriends(@Param('userId') userId: number) {
-    return this.friendrequestService.getFriendList(userId);
-  }
 
   @Get('pending/:userId')
   @ApiOperation({ summary: 'Get pending friend request list of a user' })
@@ -44,7 +50,7 @@ export class FriendrequestController {
     return this.friendrequestService.getPendingRequests(userId);
   }
 
-  @Get('friendstatus/:otherUserId')
+  @Get('status/:otherUserId')
   @ApiOperation({ summary: 'check friend status of a user' })
   async checkFriendStatus(@Request() req, @Param('otherUserId') otherId: number) {
     const userId = Number(req.user?.sub);
@@ -52,14 +58,11 @@ export class FriendrequestController {
     return { status }; // ví dụ: { status: 1 }
   }
 
-   @Get('friends/suggestions')
-    @ApiOperation({ summary: 'Get friend suggestions' })
-    @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
-    @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
-  async getSuggestions(  @Request() req,  @Query('page') page = 1,  @Query('limit') limit = 10, ) {
-    const userId = Number(req.user?.sub);
-    if (!userId) throw new UnauthorizedException();
-    return this.friendrequestService.friendSuggestion(+userId, +page, +limit);;
+     @Get(':userId')
+  @ApiOperation({ summary: 'Get friend list of a user' })
+  getFriends(@Param('userId') userId: number) {
+    return this.friendrequestService.getFriendList(userId);
   }
+
 
 }
