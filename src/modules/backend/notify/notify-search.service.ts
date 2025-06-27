@@ -61,37 +61,29 @@ export class NotifySearchService implements OnApplicationBootstrap {
         const bulkBody = notifications.flatMap(notify => [
             { index: { _index: this.indexEs, _id: notify.id } },
             {
-              
-                    /*"id": 66,
-                    "content": "Post with ID 38 has been saved by user with ID 3",
-                    "createdAt": "2025-06-27T01:20:35.087Z",
-                    "user": {
-                    "id": 3,
-                    "fullname": "Testing Name",
-                    "email": "testemail@gmail.com",
-                    "password": "$2b$10$0OCiQY414luhvyID/OBc5eQwl2rRTl.xOmQ4GaTNAKB4tYv/ZmK2y",
-                    "phone": "0123456789",
-                    "profilepic": "https://example.com/avatar.jpg",
-                    "coverpic": "https://example.com/cover.jpg",
-                    "displayname": null,
-                    "bio": "This is my  bio",
-                    "birthplace": "HCM, Vietnam",
-                    "workingPlace": "HCM, Vietnam",
-                    "isActive": true,
-                    "createdAt": "2025-06-18T10:53:58.015Z",
-                    "updatedAt": "2025-06-27T07:23:46.989Z",
-                    "resetToken": "1dc2f083-1ab3-4a7f-9824-5e5ba927dfde",
-                    "resetTokenExpired": "2025-06-27T08:23:46.981Z"
-                    },
-                    "post": {
-                    "id": 38,
-                    "isType": 0,
-                    "content": "test testing edit",
-                    "mediaUrl": null,
-                    "friends": null,
-                    "createdAt": "2025-06-26T00:45:07.643Z",
-                    "updatedAt": "2025-06-26T07:46:27.063Z"
-                    }*/
+                    id: notify.id,
+                    content: notify.content,
+                    createdAt: notify.createdAt,
+                    user: notify.user ?     {
+                        id: notify.user.id,
+                        fullname: notify.user.fullname,
+                        email: notify.user.email,
+                        phone: notify.user.phone,
+                        profilepic: notify.user.profilepic, // Assuming profilepic is the avatar URL
+                        coverpic: notify.user.coverpic,
+                        displayname: notify.user.displayname,
+                        bio: notify.user.bio,
+                        avatar: notify.user.profilepic, // Assuming profilepic is the avatar URL
+                    }: null,
+                    post: notify.post ? {
+                        id: notify.post.id,
+                        content: notify.post.content,
+                        isType: notify.post.isType,
+                        mediaUrl: notify.post.mediaUrl,
+                        friends: notify.post.friends,
+                        createdAt: notify.post.createdAt,
+                        updatedAt: notify.post.updatedAt,
+                    } : null
 
 
             }
@@ -100,7 +92,7 @@ export class NotifySearchService implements OnApplicationBootstrap {
         if (result.errors) {
             console.error('❌ Some documents failed to index:', result.items);
         } else {
-            console.log(`✅ Successfully indexed ${notifications.length} old posts.`);
+            console.log(`✅ Successfully indexed ${notifications.length} old notifications.`);
         }
     }
 
