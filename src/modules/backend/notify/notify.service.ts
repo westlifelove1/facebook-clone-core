@@ -74,8 +74,7 @@ export class NotifyService {
       if (!notify) {
           throw new Error(`Notify with id ${id} not found`);
       }
-      await this.notifyRepository.remove(notify);
-      
+      await this.notifyRepository.remove(notify);      
       this.client.emit('delete_notify_index', {
           postId: id,
       }).subscribe();

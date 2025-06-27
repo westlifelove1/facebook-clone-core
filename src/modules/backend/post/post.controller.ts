@@ -5,6 +5,8 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '../../../guards/auth/auth.guard';
 import { PostSearchService } from './post-search.service';
+import { NotifyService } from '../notify/notify.service';
+
 
 @ApiTags('Backend / Post')
 @ApiBearerAuth('access_token')
@@ -13,6 +15,7 @@ import { PostSearchService } from './post-search.service';
 export class PostController {
   constructor(private readonly postService: PostService,
                private readonly postSearchService: PostSearchService, 
+               private readonly notifyService: NotifyService
   ) {}
 
   @Post()
@@ -45,18 +48,43 @@ export class PostController {
     return this.postSearchService.searchPosts(userId, q, page, limit);
   }
 
+  @Get('search/:type')
+  searchFeed(
+          @Request() req,
+          @Query('q') q?: string,
+          @Query('type') type?: string,
+          @Query('page') page?: number,
+          @Query('limit') limit?: number
+        ) {
+          let userId: number;
+          userId = Number(req.user?.sub);
+          if (!userId || isNaN(userId)) {
+              throw new BadRequestException('ID nguoi dung khong hop le');
+          }
+       
+    return this.postSearchService.searchFeed(userId, q, type, page, limit);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.postService.findOne(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
-    return this.postService.update(+id, updatePostDto);
+  update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto, @Request() req) {
+    const userId = Number(req.user?.sub);
+      if (!userId || isNaN(userId)) {
+          throw new BadRequestException('ID nguoi dung khong hop le');
+      }
+    return this.postService.update(+id, updatePostDto, userId);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.postService.remove(+id);
+  remove(@Param('id') id: string, @Request() req) {
+    const userId = Number(req.user?.sub);
+    if (!userId || isNaN(userId)) {
+        throw new BadRequestException('ID nguoi dung khong hop le');
+    }
+    return this.postService.remove(+id, userId);
   }
 }

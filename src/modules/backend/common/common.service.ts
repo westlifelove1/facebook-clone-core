@@ -15,6 +15,7 @@ export class CommonService {
         }
 
         const allowedMimeTypes = [
+            'image/jpg',
             'image/jpeg',
             'image/png',
             'image/gif',

@@ -1,13 +1,15 @@
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { ElasticsearchService } from '@nestjs/elasticsearch';
 import { QueryFailedError } from 'typeorm';
+import { PostService } from './post.service';
 
 @Injectable()
 export class PostSearchService implements OnApplicationBootstrap {
     private readonly indexEs = 'post';
 
     constructor(
-        private readonly searchService: ElasticsearchService
+        private readonly searchService: ElasticsearchService,
+        private readonly postService: PostService, 
     ) {}
 
     // Initialize ES index and mapping when app starts
@@ -47,6 +49,28 @@ export class PostSearchService implements OnApplicationBootstrap {
                 }
             });
             console.log('✅ Index "posts" has been initialized and mapped.');
+
+            await this.indexData(); 
+        }
+    }
+
+    private async indexData() {
+        const posts = await this.postService.findAll(); 
+        if (!posts.length) {
+            console.log('No posts found to index.');
+            return;
+        }
+        const bulkBody = posts.flatMap(post => [
+            { index: { _index: this.indexEs, _id: post.id } },
+            {
+                post
+            }
+        ]);
+        const result = await this.searchService.bulk({ body: bulkBody });
+        if (result.errors) {
+            console.error('❌ Some documents failed to index:', result.items);
+        } else {
+            console.log(`✅ Successfully indexed ${posts.length} old posts.`);
         }
     }
 
@@ -56,6 +80,58 @@ export class PostSearchService implements OnApplicationBootstrap {
             id: document.id.toString(),
             document: document,
         });
+    }
+
+    async searchFeed(userId: number, q?: string, type?:string, page = 1, limit = 10) {
+        const from = (page - 1) * limit;
+        const isNumber = q && /^\d+$/.test(q);  
+        console.log("userId:", userId); 
+
+        if (type == 'top'){
+            var query: any = {
+                bool: {
+                    must: [
+                        {
+                            term: {
+                                isType: 0
+                            }
+                        },
+                      
+                    ]
+                }
+            };
+        }else if (type == 'photo') {
+
+        }else if (type == 'video') {
+           
+        }else {  
+        
+        }
+       
+
+
+        const result = await this.searchService.search({
+            index: this.indexEs,
+            query,
+            from,
+            size: limit,
+            sort: [
+                {
+                    createdAt: {
+                        order: 'desc',
+                    },
+                },
+            ],
+        });
+
+        const total =
+            typeof result.hits.total === 'number'
+                ? result.hits.total
+                : result.hits.total?.value || 0;
+
+        const data = result.hits.hits.map((hit) => hit._source);
+
+        return { data, total, page, limit };
     }
 
     async searchPosts(userId: number, q?: string, page = 1, limit = 10) {
@@ -72,10 +148,13 @@ export class PostSearchService implements OnApplicationBootstrap {
                             }
                         },
                         {
-                            term: {
-                            userId: userId
+                            "nested": {
+                            "path": "user",
+                            "query": {
+                                "term": { "user.id": userId }
                             }
-                        }
+                            }
+                        },
                         ]
                     }
         };
@@ -89,22 +168,10 @@ export class PostSearchService implements OnApplicationBootstrap {
                             fuzziness: 'auto'
                         }
                     }
-                },
-                {
-                    nested: {
-                        path: 'user',
-                        query: {
-                            match: {
-                                'user.fullname': {
-                                    query: q,
-                                    fuzziness: 'auto'
-                                }
-                            }
-                        }
-                    }
                 }
+                
             ];
-            
+
             // If query is a number, add ID match
             if (isNumber) {
                 query.bool.should.push({
@@ -115,8 +182,8 @@ export class PostSearchService implements OnApplicationBootstrap {
             }
         }
 
-        // console.log('Search query:', JSON.stringify(query));
-
+        console.log('Search query:', JSON.stringify(query));
+        console.log('from:', from, 'limit:', limit);
         const result = await this.searchService.search({
             index: this.indexEs,
             query,
@@ -124,7 +191,7 @@ export class PostSearchService implements OnApplicationBootstrap {
             size: limit,
             sort: [
                 {
-                    createdAt: {
+                    updatedAt: {
                         order: 'desc',
                     },
                 },
@@ -164,19 +231,19 @@ export class PostSearchService implements OnApplicationBootstrap {
         return { message: `Post ${postId} deleted from ES.` };
     }
 
-    async deleteByFieldId(commentId: number) {
+    async deleteByFieldId(postId: number) {
         const result = await this.searchService.deleteByQuery({
             index: this.indexEs,
             query: {
                 match: {
-                    id: commentId,
+                    id: postId,
                 },
             },
         });
 
         return {
             deleted: result.deleted,
-            message: `Deleted all documents with id = ${commentId}`,
+            message: `Deleted all documents with id = ${postId}`,
         };
     }
 } 

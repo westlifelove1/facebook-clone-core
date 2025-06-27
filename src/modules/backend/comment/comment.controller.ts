@@ -3,7 +3,7 @@ import { CommentService } from './comment.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { AuthGuard } from '../../../guards/auth/auth.guard';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CommentSearchService } from './comment-search.service';
 
 @ApiTags('Backend / Comment')
@@ -20,7 +20,7 @@ export class CommentController {
     @ApiBody({
         schema: {
             type: 'object',
-            required: ['content'],
+            required: ['content', 'postId'],
             properties: {
                 content: {
                     type: 'string',
@@ -30,44 +30,15 @@ export class CommentController {
                 postId: {
                     type: 'number',
                     example: '1',
-                    description: 'Post id'
+                    description: 'ID của post'
                 },
                 parentCommentId: {
                     type: 'number',
-                    example: '1',
+                    example: 'null',
                     description: 'Id của comment cha'
                 }
             }
         }
-    })
-    @ApiResponse({
-    status: 201,
-    description: 'Tạo bình luận thành công',
-    schema: {
-        type: 'object',
-        properties: {
-            message: {
-                type: 'string',
-                example: 'Video created successfully'
-            },
-            result: {
-                type: 'object',
-                properties: {
-                    id: { type: 'number', example: 1 },
-                    title: { type: 'string', example: 'Video Title' },
-                    description: { type: 'string', example: 'Video Description' },
-                    image: { type: 'string', example: '/uploads/images/example.jpg' },
-                    path: { type: 'string', example: '/uploads/videos/example.mp4' },
-                    view: { type: 'number', example: 0 },
-                    user_id: { type: 'number', example: 1 },
-                    user_fullname: { type: 'string', example: 'John Doe' },
-                    user_avatar: { type: 'string', example: '/uploads/avatars/example.jpg' },
-                    tags: { type: 'array', example: ['tag1', 'tag2'] },
-                    createdAt: { type: 'string', example: '2024-03-20T10:00:00Z' }
-                }
-            }
-        }
-    }
     })
     create(@Body() createCommentDto: CreateCommentDto, @Request() req) {
         const userId = Number(req.user?.sub);
@@ -77,25 +48,26 @@ export class CommentController {
         return this.commentService.create(createCommentDto, userId);
     }
 
-    @Get()
-    @ApiQuery({ name: 'q', required: false })
-    @ApiQuery({ name: 'page', required: false, type: Number })
-    @ApiQuery({ name: 'limit', required: false, type: Number })
-    findAll(
-        @Query('q') q?: string,
-        @Query('page') page?: number,
-        @Query('limit') limit?: number,
-    ) {
-        console.log(q);
-        return this.commentSearchService.searchComments(q, page, limit);
-    }
+    // @Get()
+    // @ApiQuery({ name: 'q', required: false })
+    // @ApiQuery({ name: 'page', required: false, type: Number })
+    // @ApiQuery({ name: 'limit', required: false, type: Number })
+    // findAll(
+    //     @Query('q') q?: string,
+    //     @Query('page') page?: number,
+    //     @Query('limit') limit?: number,
+    // ) {
+    //     return this.commentSearchService.searchComments(q, page, limit);
+    // }
 
-    @Get(':id')
-    findOne(@Param('id') id: string) {
-        return this.commentService.findOne(+id);
-    }
+    // @Get(':id')
+    // findOne(@Param('id') id: string) {
+    //     return this.commentService.findOne(+id);
+    // }
 
     @Get('post/:postId')
+    @ApiOperation({ summary: 'Lấy tất cả bình luận của 1 post' })
+    @ApiParam({ name: 'postId', required: true, type: String })
     @ApiQuery({ name: 'page', required: false, type: Number })
     @ApiQuery({ name: 'limit', required: false, type: Number })
     getPostComments(
@@ -107,11 +79,39 @@ export class CommentController {
     }
 
     @Patch(':id')
+    @ApiOperation({ summary: 'Chỉnh sửa bình luận' })
+    @ApiBody({
+        schema: {
+            type: 'object',
+            required: ['id'],
+            properties: {
+                id: {
+                    type: 'number',
+                    example: '1',
+                    description: 'ID của bình luận'
+                }
+            }
+        }
+    })
     update(@Param('id') id: string, @Body() updateCommentDto: UpdateCommentDto) {
         return this.commentService.update(+id, updateCommentDto);
     }
 
     @Delete(':id')
+    @ApiOperation({ summary: 'Xóa bình luận' })
+    @ApiBody({
+        schema: {
+            type: 'object',
+            required: ['id'],
+            properties: {
+                id: {
+                    type: 'number',
+                    example: '1',
+                    description: 'ID của bình luận'
+                }
+            }
+        }
+    })
     remove(@Param('id') id: string) {
         return this.commentService.remove(+id);
     }

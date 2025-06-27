@@ -1,13 +1,15 @@
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { ElasticsearchService } from '@nestjs/elasticsearch';
 import { QueryFailedError } from 'typeorm';
+import { NotifyService } from './notify.service';
 
 @Injectable()
 export class NotifySearchService implements OnApplicationBootstrap {
     private readonly indexEs = 'notify';
 
     constructor(
-        private readonly searchService: ElasticsearchService
+        private readonly searchService: ElasticsearchService,
+        private readonly notifyService: NotifyService,
     ) {}
 
     // Initialize ES index and mapping when app starts
@@ -45,6 +47,28 @@ export class NotifySearchService implements OnApplicationBootstrap {
                 }
             });
             console.log('✅ Index "notify" has been initialized and mapped.');
+
+            await this.indexData(); 
+        }
+    }
+
+    private async indexData() {
+        const notifications = await this.notifyService.findAll(); 
+        if (!notifications.length) {
+            console.log('No notify found to index.');
+            return;
+        }
+        const bulkBody = notifications.flatMap(notify => [
+            { index: { _index: this.indexEs, _id: notify.id } },
+            {
+                notify
+            }
+        ]);
+        const result = await this.searchService.bulk({ body: bulkBody });
+        if (result.errors) {
+            console.error('❌ Some documents failed to index:', result.items);
+        } else {
+            console.log(`✅ Successfully indexed ${notifications.length} old posts.`);
         }
     }
 

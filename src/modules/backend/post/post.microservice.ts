@@ -10,12 +10,12 @@ export class PostMicroservice {
 
     @EventPattern('index_post')
     async handleMessage(@Payload() data: { index: string; document: any }) {
-        console.log('handleIndexPost', data);
+        // console.log('handleIndexPost', data);
         return this.PostSearchService.indexPost(data.document);
     }
 
-    @EventPattern('delete_comment_index')
-    async handleDeletePostIndex(@Payload() data: { commentId: number }) {
-        return this.PostSearchService.deletePostFromIndex(data.commentId);
+    @EventPattern('delete_post_index')
+    async handleDeletePostIndex(@Payload() data: { id: number }) {
+        return this.PostSearchService.deletePostFromIndex(data.id);
     }
 } 

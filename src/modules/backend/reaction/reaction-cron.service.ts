@@ -14,15 +14,13 @@ export class ReactionCronService {
 
   @Cron(CronExpression.EVERY_5_MINUTES)
   async persistReactionsToDB() {
+    console.log(`Cron insert reactions started!`);
     const postIds = await this.reactionService.getAllPostIds();
-
     for (const postId of postIds) {
       const reactionMap = await this.reactionService.getReactions(postId);
-
       if (Object.keys(reactionMap).length === 0) continue;
-
+// console.log(reactionMap);
       await this.reactionRepo.saveReactionCounts(postId, reactionMap);
-      await this.reactionService.clearReactions(postId);
       
     }
   }

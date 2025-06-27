@@ -7,6 +7,8 @@ import { UpdateCommentDto } from './dto/update-comment.dto';
 import { User } from '../user/entities/user.entity';
 import { Post } from '../post/entities/post.entity';
 import { ClientProxy } from '@nestjs/microservices';
+import { Notify } from '../notify/entities/notify.entity';
+import { relative } from 'path';
 
 @Injectable()
 export class CommentService {
@@ -15,19 +17,17 @@ export class CommentService {
         private commentRepository: Repository<Comment>,
         @InjectRepository(Post)
         private postRepository: Repository<Post>,
+        @InjectRepository(Notify)
+        private notifyRepository: Repository<Notify>,
         @Inject('APP_SERVICE') private readonly client: ClientProxy,
     ) {}
 
     async create(createCommentDto: CreateCommentDto, userId: number): Promise<any> {
-        const post = await this.postRepository.findOne({ where: { id: createCommentDto.postId } });
+        const post = await this.postRepository.findOne({ where: { id: createCommentDto.postId }, relations: ['user', 'comments', 'reactions'] });
         if (!post) {
             throw new HttpException(`Bai viet khong ton tai`, HttpStatus.BAD_REQUEST);
         }
-        // const user = await this.userRepository.findOne({ where: { id: userId } });
-        // if (!user) {
-        //     throw new HttpException(`Tai khoan khong ton tai`, HttpStatus.BAD_REQUEST);
-        // }
-        // console.log(JSON.stringify(user, null, 4));
+        
         const comment = this.commentRepository.create({
             content: createCommentDto.content,
             author: { id: userId } as User,
@@ -52,20 +52,32 @@ export class CommentService {
             document: newComment,
         }).subscribe();
 
+        const notify = this.notifyRepository.create({   
+            user: { id: userId } as User,
+            post: post,
+            content: `User has commented to a post`,
+        });
+        await this.notifyRepository.save(notify);
+        // Emit event to index the post
+
+        this.client.emit('index_notify', {
+            index: 'notify',
+            document: notify,
+        }).subscribe();
+
+        post.userId = userId; 
+        this.client.emit('index_post', {
+            index: 'post',
+            _id : post.id.toString(),
+            id: post.id,
+            document: post,
+        }).subscribe();
+
         return {
             msg: "success",
             data: newComment
         };
     }
-
-    // async findAll(): Promise<Comment[]> {
-    //     return this.commentRepository.find({
-    //         relations: ['author', 'post', 'parentComment', 'replies'],
-    //         order: {
-    //             createdAt: 'DESC'
-    //         }
-    //     });
-    // }
 
     async findOne(id: number): Promise<Comment> {
         const comment = await this.commentRepository.findOne({
@@ -86,7 +98,7 @@ export class CommentService {
         const updatedComment = await this.commentRepository.save(comment);
 
         // Update the comment in Elasticsearch
-        this.client.emit('index_comment', {
+        this.client.emit('index.comment', {
             index: 'comment',
             document: updatedComment,
         }).subscribe();
@@ -105,21 +117,5 @@ export class CommentService {
         this.client.emit('delete.comment', {
             commentId: id,
         }).subscribe();
-    }
-
-    async getPostComments(postId: number): Promise<Comment[]> {
-        return this.commentRepository.find({
-            where: {
-                post: { id: postId },
-                parentComment: IsNull()
-            },
-            relations: ['author', 'replies', 'replies.author'],
-            order: {
-                createdAt: 'DESC',
-                replies: {
-                    createdAt: 'ASC'
-                }
-            }
-        });
     }
 }
