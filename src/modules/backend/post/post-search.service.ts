@@ -153,8 +153,8 @@ export class PostSearchService implements OnApplicationBootstrap {
 
         return { data, total, page, limit };
     }
-
-    async searchPosts(userId: number, q?: string, page = 1, limit = 10) {
+    
+    async searchUserPosts(userId: number, q?: string, page = 1, limit = 10) {
         const from = (page - 1) * limit;
         const isNumber = q && /^\d+$/.test(q);  
         console.log("userId:", userId); 
@@ -162,6 +162,74 @@ export class PostSearchService implements OnApplicationBootstrap {
        const query: any = {
                     bool: {
                         must: [
+                        {
+                            "nested": {
+                            "path": "user",
+                            "query": {
+                                "term": { "user.id": userId }
+                            }
+                            }
+                        },
+                        ]
+                    }
+        };
+        // Add search term if provided
+        if (q) {
+            query.bool.must = [
+                {
+                    match: {
+                        content: {
+                            query: q,
+                            fuzziness: 'auto'
+                        }
+                    }
+                }
+                
+            ];
+
+            // If query is a number, add ID match
+            if (isNumber) {
+                query.bool.should.push({
+                    term: {
+                        id: parseInt(q)
+                    }
+                });
+            }
+        }
+
+        console.log('Search query:', JSON.stringify(query));
+        console.log('from:', from, 'limit:', limit);
+        const result = await this.searchService.search({
+            index: this.indexEs,
+            query,
+            from,
+            size: limit,
+            sort: [
+                {
+                    updatedAt: {
+                        order: 'desc',
+                    },
+                },
+            ],
+        });
+
+        const total =
+            typeof result.hits.total === 'number'
+                ? result.hits.total
+                : result.hits.total?.value || 0;
+
+        const data = result.hits.hits.map((hit) => hit._source);
+
+        return { data, total, page, limit };
+    }
+    async searchPosts(userId: number, q?: string, page = 1, limit = 10) {
+        const from = (page - 1) * limit;
+        const isNumber = q && /^\d+$/.test(q);  
+        console.log("userId:", userId); 
+
+       const query: any = {
+                    bool: {
+                        should: [
                         {
                             term: {
                                 isType: 0
@@ -180,7 +248,7 @@ export class PostSearchService implements OnApplicationBootstrap {
         };
         // Add search term if provided
         if (q) {
-            query.bool.should = [
+            query.bool.must = [
                 {
                     match: {
                         content: {
