@@ -22,19 +22,19 @@ export class FriendrequestController {
     return this.friendrequestService.friendSuggestion(+userId, +page, +limit);;
   }
 
-  @Post(':receiverId')
-  @ApiOperation({ summary: 'Send friend request' })
-  sendRequest( @Param('receiverId') receiverId: number,  @Request() req,) {
-    const senderId = Number(req.user?.sub);
-    console.log('Sender ID:', senderId);
-    return this.friendrequestService.sendRequest(senderId, receiverId);
-  }
-
   @Post('respond')
   @ApiOperation({ summary: 'Respond to a friend request (accept or reject)' })
   respondToRequest( @Body() dto: RespondFriendRequestDto, @Request() req,) {
     const receiverId = Number(req.user?.sub);
     return this.friendrequestService.respondRequest(dto.senderId, receiverId, dto.status);
+  }
+
+  @Post('send/:receiverId')
+  @ApiOperation({ summary: 'Send friend request' })
+  sendRequest( @Param('receiverId') receiverId: number,  @Request() req,) {
+    const senderId = Number(req.user?.sub);
+    console.log('Sender ID:', senderId);
+    return this.friendrequestService.sendRequest(senderId, receiverId);
   }
 
   @Delete('unfriend/:userId/:friendId')
@@ -55,7 +55,7 @@ export class FriendrequestController {
   async checkFriendStatus(@Request() req, @Param('otherUserId') otherId: number) {
     const userId = Number(req.user?.sub);
     const status = await this.friendrequestService.getFriendStatus(userId, otherId);
-    return { status }; // ví dụ: { status: 1 }
+    return { status }; 
   }
 
      @Get(':userId')
