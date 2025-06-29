@@ -167,13 +167,7 @@ export class PostService {
      throw new HttpException(`You are not allowed to delete this post`, HttpStatus.FORBIDDEN);
     }
 
-    await this.postRepository.remove(post);
-
-    this.client.emit('delete_post_index', {
-     id: postId,
-    }).subscribe();
-
-    // Delete notification for the post
+     // Delete notification for the post
     const notify = this.notifyRepository.create({   
         user: user,
         post: post,
@@ -186,5 +180,13 @@ export class PostService {
         index: 'notify',
         document: notify,
     }).subscribe();
+    
+    await this.postRepository.delete(postId);
+
+    this.client.emit('delete_post_index', {
+     id: postId,
+    }).subscribe();
+
+   
   }
 }

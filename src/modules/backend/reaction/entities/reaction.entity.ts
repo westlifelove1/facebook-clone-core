@@ -26,7 +26,7 @@ export class Reaction {
     @ManyToOne(() => User, (user) => user.reactions)
     user: User;
 
-    @ManyToOne(() => Post, (post) => post.reactions)
+    @ManyToOne(() => Post, (post) => post.reactions, { onDelete: 'CASCADE' })
     post: Post;
 
     @CreateDateColumn()
