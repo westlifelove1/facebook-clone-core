@@ -61,7 +61,7 @@ constructor(
   }
 
   findAll(userId : number) {
-    return this.postSavedRepository.find({where: { userId: userId }, relations: ['post', 'user'] ,
+    return this.postSavedRepository.find({where: { userId: userId }, relations: ['post', 'user', 'post.comments', 'post.reactions'] ,
     order: {
       updatedAt: 'DESC', 
     },});
