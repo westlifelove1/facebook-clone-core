@@ -131,6 +131,11 @@ export class UserController {
         return this.userService.findOne(id);
     }
 
+    @Post('many')
+    findMany(@Body() body: { ids: number[] }): Promise<User[]> {
+        return this.userService.findManyByIds(body.ids);
+    }
+
     @Get()
     @ApiBearerAuth('access_token') 
     @ApiOperation({ summary: 'Search users by name or email' })

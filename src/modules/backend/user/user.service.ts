@@ -1,7 +1,7 @@
 import { BadRequestException, HttpException, HttpStatus, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
@@ -108,5 +108,13 @@ export class UserService {
 
         await this.userRepository.save(user);
         return { message: 'Password updated successfully' };
+    }
+
+    async findManyByIds(ids: number[]): Promise<User[]> {
+    return this.userRepository.find({
+        where: {
+        id: In(ids),
+        }, select: ['id', 'fullname', 'email']
+    });
     }
 }
