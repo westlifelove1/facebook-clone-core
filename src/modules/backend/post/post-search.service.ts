@@ -237,6 +237,12 @@ export class PostSearchService implements OnApplicationBootstrap {
                             }
                         },
                         {
+                            term: {
+                                friends: userId
+                            }
+                        },
+    
+                        {
                             "nested": {
                             "path": "user",
                             "query": {
