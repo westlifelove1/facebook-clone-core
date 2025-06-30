@@ -95,7 +95,7 @@ export class PostService {
 
   findAll() {
     return this.postRepository.find({
-        relations: ['user', 'comments', 'reactions'],
+        relations: ['user', 'comments', 'comments.author', 'reactions'],
         order: {
             createdAt: 'DESC'
         }
@@ -105,7 +105,7 @@ export class PostService {
   findOne(id: number) {
     return this.postRepository.findOne({
       where: { id },    
-      relations: ['user', 'comments', 'reactions'],
+      relations: ['user', 'comments', 'comments.author', 'reactions'],
     }); 
   }
 

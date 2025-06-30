@@ -2,6 +2,9 @@ import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { ElasticsearchService } from '@nestjs/elasticsearch';
 import { QueryFailedError } from 'typeorm';
 import { PostService } from './post.service';
+import { auth } from 'firebase-admin';
+import { AuthModuleOptions } from '@nestjs/passport';
+import { AuthError } from '@supabase/supabase-js';
 
 @Injectable()
 export class PostSearchService implements OnApplicationBootstrap {
@@ -49,14 +52,12 @@ export class PostSearchService implements OnApplicationBootstrap {
                 }
             });
             console.log('✅ Index "posts" has been initialized and mapped.');
-
             await this.indexData(); 
         }
     }
 
     private async indexData() {
         const posts = await this.postService.findAll(); 
-        console.log(posts);
         if (!posts.length) {
             console.log('No posts found to index.');
             return;
@@ -85,6 +86,32 @@ export class PostSearchService implements OnApplicationBootstrap {
                     createdAt: post.user.createdAt.toISOString(),
                     updatedAt: post.user.updatedAt.toISOString(),
                 },
+                comments: post.comments.map(comment => ({
+                    id: comment.id,
+                    content: comment.content,
+                    createdAt: comment.createdAt.toISOString(),
+                    updatedAt: comment.updatedAt.toISOString(),
+                    author:{    
+                        id: comment.author.id,
+                        fullname: comment.author.fullname,
+                        email: comment.author.email,
+                        profilepic: comment.author.profilepic,
+                        coverpic: comment.author.coverpic,
+                        displayname: comment.author.displayname,
+                        bio: comment.author.bio,
+                        birthplace: comment.author.birthplace,
+                        workingPlace: comment.author.workingPlace,
+                        isActive: comment.author.isActive,
+                        createdAt: comment.author.createdAt.toISOString(),
+                        updatedAt: comment.author.updatedAt.toISOString(),
+                    }
+                })),  
+                reactions: post.reactions.map(reaction => ({
+                    id: reaction.id,
+                    type: reaction.type,
+                    createdAt: reaction.createdAt.toISOString(),
+                    updatedAt: reaction.updatedAt.toISOString(),
+                })),
             }
         ]);
         const result = await this.searchService.bulk({ body: bulkBody });

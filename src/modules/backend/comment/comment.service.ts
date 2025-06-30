@@ -65,7 +65,7 @@ export class CommentService {
             document: notify,
         }).subscribe();
 
-        const updatedPost = await this.postRepository.findOne({ where: { id: createCommentDto.postId }, relations: ['user', 'comments', 'reactions'] });
+        const updatedPost = await this.postRepository.findOne({ where: { id: createCommentDto.postId }, relations: ['user', 'comments', 'comments.author', 'reactions'] });
         if (updatedPost) {
             updatedPost.userId = userId; 
             this.client.emit('index_post', {
