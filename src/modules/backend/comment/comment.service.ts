@@ -19,6 +19,8 @@ export class CommentService {
         private postRepository: Repository<Post>,
         @InjectRepository(Notify)
         private notifyRepository: Repository<Notify>,
+        @InjectRepository(User)
+        private userRepository: Repository<User>,
         @Inject('APP_SERVICE') private readonly client: ClientProxy,
     ) {}
 
@@ -27,10 +29,14 @@ export class CommentService {
         if (!post) {
             throw new HttpException(`Bai viet khong ton tai`, HttpStatus.BAD_REQUEST);
         }
-        
-        const comment = this.commentRepository.create({
+        const user = await this.userRepository.findOne({ where: { id: userId } });
+        if (!user) {
+            throw new HttpException(`Nguoi dung khong ton tai`, HttpStatus.BAD_REQUEST);
+        }
+
+        const comment = this.commentRepository.create({ 
             content: createCommentDto.content,
-            author: { id: userId } as User,
+            author: user,
             post: post,
         });
 
