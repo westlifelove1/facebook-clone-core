@@ -151,6 +151,7 @@ export class AuthService {
 
     async forgotPassword(dto: ForgotPasswordDto) {
         const user = await this.userRepository.findOne({ where: { email: dto.email } });
+        console.log('Forgot password request for email:', dto.email);
         if (!user) return; 
 
         const token = uuidv4(); 
@@ -162,16 +163,18 @@ export class AuthService {
         const resetLink = `http://localhost:3000/reset-password?token=${token}`;
 
         const transporter = nodemailer.createTransport({
-            host: 'mail.talentnetwork.vn',        
+            host: 'mail.facebook.com',        
             port: 587,                     
             secure: false,                  // true for port 465, false for 587
             auth: {
-                user: 'hrvietnam.support@talentnetwork.vn',       
-                pass: 'VsLqprLRIdw26',   
+                user: 'xxxx@faceboook.com',       
+                pass: 'xxxxxxx',   
             },
         });
+
+        console.log('Sending password reset email to:', user.email);
         await transporter.sendMail({
-            from: '"Facebook Clone" <facebookclone@gmail.com>',
+            //from: '"Facebook Clone" <facebookclone@gmail.com>',
             to: user.email,
             subject: 'Reset Your Password',
             html: `Click here to reset your password: <a href="${resetLink}">${resetLink}</a>`,
